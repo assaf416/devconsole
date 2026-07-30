@@ -44,9 +44,23 @@ jobs:
         shell: bash
         run: |
           if [[ -f coverage/coverage.json ]]; then
-            covered_percent=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "covered_percent") || 0')
-            covered_lines=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "covered_lines") || 0')
-            total_lines=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "total_lines") || 0')
+            metrics=$(ruby -rjson -e '
+              j = JSON.parse(File.read("coverage/coverage.json"))
+              total = 0
+              covered = 0
+              j.fetch("coverage", {}).each_value do |file_data|
+                Array(file_data["lines"]).each do |v|
+                  next if v.nil?
+                  total += 1
+                  covered += 1 if v.to_i > 0
+                end
+              end
+              percent = total.zero? ? 0.0 : ((covered.to_f / total) * 100).round(2)
+              puts [percent, covered, total].join(" ")
+            ')
+            covered_percent=$(echo "$metrics" | awk '{print $1}')
+            covered_lines=$(echo "$metrics" | awk '{print $2}')
+            total_lines=$(echo "$metrics" | awk '{print $3}')
             {
               echo "summary<<EOF"
               echo "## CI Test Results"
