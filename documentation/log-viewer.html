@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log Viewer | צפייה בלוגים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6efe7;
+      --panel: rgba(255, 252, 246, 0.92);
+      --panel-strong: #fffdf8;
+      --panel-deep: #f5ebe0;
+      --text: #1f1b17;
+      --muted: #6b6259;
+      --line: rgba(92, 72, 53, 0.14);
+      --accent: #b04d2c;
+      --accent-soft: rgba(176, 77, 44, 0.12);
+      --good: #2e7a54;
+      --warn: #a57216;
+      --error: #b43f3f;
+      --info: #2f6f98;
+      --shadow: 0 24px 60px rgba(62, 44, 28, 0.12);
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #14161a;
+      --panel: rgba(22, 25, 30, 0.92);
+      --panel-strong: #1b1f24;
+      --panel-deep: #20242a;
+      --text: #f5eee6;
+      --muted: #b7ae9f;
+      --line: rgba(228, 213, 191, 0.12);
+      --accent: #ff8a5b;
+      --accent-soft: rgba(255, 138, 91, 0.14);
+      --good: #70c08f;
+      --warn: #f1bb60;
+      --error: #ef7c7c;
+      --info: #6fb4df;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Heebo", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(176, 77, 44, 0.16), transparent 28%),
+        radial-gradient(circle at left 16%, rgba(47, 111, 152, 0.12), transparent 24%),
+        linear-gradient(180deg, var(--bg), var(--bg));
+    }
+
+    a { color: inherit; }
+
+    .shell {
+      width: min(1260px, calc(100vw - 1.6rem));
+      margin: 0 auto;
+      padding: 1.25rem 0 2rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.35fr 0.85fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-card,
+    .summary-card,
+    .stats-card,
+    .filters-card,
+    .list-card,
+    .help-card {
+      padding: 1.25rem;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .hero-title {
+      margin: 1rem 0 0.5rem;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1;
+    }
+
+    .hero-subtitle,
+    .muted,
+    .help-text,
+    .field-hint {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .meta-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .meta-label {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .toolbar,
+    .toolbar-group,
+    .inline-actions,
+    .filters-grid,
+    .chip-row,
+    .entry-meta,
+    .summary-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .toolbar {
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .button,
+    .select,
+    .input,
+    .datetime {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel-strong);
+      color: var(--text);
+      min-height: 42px;
+      padding: 0.65rem 0.95rem;
+      font: inherit;
+    }
+
+    .button {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .button--accent {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .button--soft {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .button--ghost {
+      background: transparent;
+    }
+
+    .button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .dropzone {
+      border: 1.5px dashed var(--line);
+      border-radius: 22px;
+      padding: 1rem;
+      background: linear-gradient(180deg, var(--panel-strong), var(--panel-deep));
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .dropzone.dragover {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, var(--accent-soft), var(--panel-deep));
+    }
+
+    .dropzone-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      font-weight: 800;
+    }
+
+    .dropzone-subtitle {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .stat {
+      padding: 1rem 1.1rem;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+    }
+
+    .range-summary {
+      display: grid;
+      gap: 0.45rem;
+      margin-top: 0.4rem;
+    }
+
+    .progress-bar {
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(127, 127, 127, 0.16);
+    }
+
+    .progress-bar > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), #e4b18f);
+    }
+
+    .filters-card {
+      margin-bottom: 1rem;
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.7fr 1fr 1fr;
+      gap: 0.85rem;
+      align-items: end;
+    }
+
+    .field {
+      display: grid;
+      gap: 0.45rem;
+      min-width: 0;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .input,
+    .select,
+    .datetime {
+      border-radius: 14px;
+      min-height: 46px;
+      width: 100%;
+    }
+
+    .input::placeholder {
+      color: color-mix(in srgb, var(--muted) 75%, transparent);
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .panel-heading h2,
+    .panel-heading h3 {
+      margin: 0;
+    }
+
+    .entries {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .entry {
+      padding: 1rem;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    .entry-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .entry-main {
+      display: grid;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+
+    .entry-title {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      font-weight: 800;
+    }
+
+    .entry-message {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .level-chip,
+    .meta-chip,
+    .source-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.42rem 0.72rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      font-size: 0.88rem;
+    }
+
+    .level-chip.level-info { color: var(--info); background: rgba(47, 111, 152, 0.1); }
+    .level-chip.level-debug { color: var(--muted); background: rgba(107, 98, 89, 0.1); }
+    .level-chip.level-warn { color: var(--warn); background: rgba(165, 114, 22, 0.1); }
+    .level-chip.level-error { color: var(--error); background: rgba(180, 63, 63, 0.1); }
+    .level-chip.level-fatal { color: #8f2a2a; background: rgba(143, 42, 42, 0.14); }
+    .level-chip.level-trace { color: var(--good); background: rgba(46, 122, 84, 0.1); }
+
+    .meta-chip {
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .empty-state {
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .preview-box {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .preview-line {
+      padding: 0.9rem 1rem;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      color: var(--muted);
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .sticky-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      backdrop-filter: blur(12px);
+    }
+
+    .sample-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .sample-list li {
+      padding: 0.65rem 0.75rem;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .stats-grid,
+      .filters-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .entry-top,
+      .toolbar,
+      .status-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body x-data="logViewerPage()" x-init="init()" :data-theme="theme">
+  <main class="shell">
+    <section class="hero">
+      <article class="panel hero-card">
+        <span class="eyebrow">
+          <i class="fa-solid fa-file-lines"></i>
+          Log Viewer
+        </span>
+        <h1 class="hero-title">צפייה וסינון לוגים</h1>
+        <p class="hero-subtitle">
+          טוענים קובץ מקומי, מסננים לפי משתמש, רמת לוג, וטווח זמן התחלה/סיום, ומקבלים תצוגה נקייה של השורות שמתאימות לחיפוש.
+        </p>
+        <div class="toolbar" style="margin:1rem 0 0;">
+          <div class="toolbar-group">
+            <button class="button button--soft" type="button" @click="toggleTheme()">
+              <i class="fa-solid" :class="theme === 'dark' ? 'fa-sun' : 'fa-moon'"></i>
+              <span x-text="theme === 'dark' ? 'Light' : 'Dark'"></span>
+            </button>
+            <button class="button button--ghost" type="button" @click="clearFilters()" :disabled="!hasActiveFilters">
+              <i class="fa-solid fa-broom"></i>
+              נקה פילטרים
+            </button>
+          </div>
+          <div class="source-pill">
+            <i class="fa-solid fa-database"></i>
+            <span x-text="sourceLabel"></span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="hero-side">
+        <section class="panel summary-card">
+          <div class="meta-row">
+            <span class="meta-label">קובץ</span>
+            <strong x-text="fileName || 'לא נטען עדיין'"></strong>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">שורות גלויות</span>
+            <strong x-text="filteredLogs.length"></strong>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">טווח זמן</span>
+            <strong x-text="timeSpanLabel"></strong>
+          </div>
+        </section>
+
+        <section class="panel summary-card">
+          <div class="meta-row" style="padding-top:0;">
+            <span class="meta-label">פורמטים נתמכים</span>
+            <strong>JSON, NDJSON, טקסט</strong>
+          </div>
+          <div class="meta-row" style="border-bottom:0; padding-bottom:0;">
+            <span class="meta-label">ברירת מחדל</span>
+            <strong>Hebrew RTL</strong>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="panel filters-card">
+      <div class="panel-heading">
+        <div>
+          <h2>טעינת קובץ וסינון</h2>
+          <div class="help-text">אפשר לגרור קובץ לכאן או לבחור ידנית. לאחר הטעינה מסננים לפי user / time / level.</div>
+        </div>
+        <div class="inline-actions">
+          <button class="button button--accent" type="button" @click="$refs.fileInput.click()">
+            <i class="fa-regular fa-folder-open"></i>
+            בחר קובץ
+          </button>
+          <input class="hidden-input" x-ref="fileInput" type="file" accept=".json,.log,.txt,.ndjson,text/plain,application/json" @change="handleFileSelected($event)">
+        </div>
+      </div>
+
+      <div class="dropzone" :class="{ 'dragover': isDragging }" @dragenter.prevent="isDragging = true" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="handleDrop($event)">
+        <div class="dropzone-title">
+          <span>גרור קובץ לכאן</span>
+          <span class="meta-chip"><span x-text="logs.length"></span> entries loaded</span>
+        </div>
+        <div class="dropzone-subtitle">
+          הנתמכים: מערך JSON עם שדות כמו timestamp / time / level / user / message, או שורות טקסט רגילות שניתן לנתח.
+        </div>
+        <div class="chip-row">
+          <span class="meta-chip"><i class="fa-solid fa-user"></i> user</span>
+          <span class="meta-chip"><i class="fa-solid fa-clock"></i> time</span>
+          <span class="meta-chip"><i class="fa-solid fa-layer-group"></i> level</span>
+          <span class="meta-chip"><i class="fa-solid fa-hourglass-start"></i> start / end</span>
+        </div>
+      </div>
+
+      <div class="filters-grid" style="margin-top:1rem;">
+        <div class="field">
+          <label for="userFilter">User</label>
+          <input id="userFilter" class="input" type="search" placeholder="חיפוש לפי משתמש" x-model.trim="filters.user">
+        </div>
+        <div class="field">
+          <label for="levelFilter">Level</label>
+          <select id="levelFilter" class="select" x-model="filters.level">
+            <option value="all">All levels</option>
+            <template x-for="level in levelOptions" :key="level">
+              <option :value="level" x-text="level"></option>
+            </template>
+          </select>
+        </div>
+        <div class="field">
+          <label for="startTime">Start time</label>
+          <input id="startTime" class="datetime" type="datetime-local" x-model="filters.startTime">
+        </div>
+        <div class="field">
+          <label for="endTime">End time</label>
+          <input id="endTime" class="datetime" type="datetime-local" x-model="filters.endTime">
+        </div>
+      </div>
+
+      <div class="toolbar" style="margin-bottom:0; align-items:flex-end;">
+        <div class="toolbar-group">
+          <button class="button button--soft" type="button" @click="setDemoFile()">
+            <i class="fa-solid fa-vial"></i>
+            טען דוגמה
+          </button>
+          <button class="button" type="button" @click="downloadSample()" :disabled="!logs.length">
+            <i class="fa-solid fa-download"></i>
+            הורד פלט מסונן
+          </button>
+        </div>
+        <div class="field-hint" x-text="error || 'Ready'">Ready</div>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="panel stat">
+        <div class="stat-label">Total entries</div>
+        <div class="stat-value" x-text="logs.length">0</div>
+      </article>
+      <article class="panel stat">
+        <div class="stat-label">Matched</div>
+        <div class="stat-value" x-text="filteredLogs.length">0</div>
+      </article>
+      <article class="panel stat">
+        <div class="stat-label">Users</div>
+        <div class="stat-value" x-text="uniqueUsers.length">0</div>
+      </article>
+      <article class="panel stat">
+        <div class="stat-label">Levels</div>
+        <div class="stat-value" x-text="levelOptions.length">0</div>
+      </article>
+    </section>
+
+    <section class="panel list-card sticky-head" style="margin-bottom:1rem;">
+      <div class="status-row">
+        <div>
+          <strong>תצוגת טווח</strong>
+          <div class="help-text" x-text="timeSpanLabel"></div>
+        </div>
+        <div style="min-width:min(460px, 100%); width:100%; max-width:520px;">
+          <div class="progress-bar">
+            <span :style="`width:${completionPercent}%`"></span>
+          </div>
+          <div class="field-hint" style="margin-top:0.45rem;" x-text="`${completionPercent}% of loaded logs match the current filters`"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel list-card">
+      <div class="panel-heading">
+        <div>
+          <h2>Log entries</h2>
+          <div class="help-text">הכניסה הראשונה והאחרונה שמוצגות בהתאם לפילטרים נבחרים.</div>
+        </div>
+        <div class="source-pill">
+          <i class="fa-solid fa-filter"></i>
+          <span x-text="filteredLogs.length ? `${filteredLogs.length} results` : 'no results'"></span>
+        </div>
+      </div>
+
+      <div class="entries" x-show="filteredLogs.length">
+        <template x-for="entry in filteredLogs" :key="entry.id">
+          <article class="entry">
+            <div class="entry-top">
+              <div class="entry-main">
+                <div class="entry-title">
+                  <span class="level-chip" :class="levelClass(entry.level)" x-text="entry.levelLabel"></span>
+                  <span x-text="entry.timestampLabel"></span>
+                </div>
+                <div class="entry-meta">
+                  <span class="meta-chip"><i class="fa-solid fa-user"></i><span x-text="entry.user || 'unknown'"></span></span>
+                  <span class="meta-chip"><i class="fa-solid fa-clock"></i><span x-text="entry.timeDisplay"></span></span>
+                </div>
+              </div>
+              <span class="meta-chip" x-text="entry.source"></span>
+            </div>
+            <p class="entry-message" x-text="entry.message"></p>
+          </article>
+        </template>
+      </div>
+
+      <section class="empty-state" x-show="!filteredLogs.length && !error">
+        לא נמצאו התאמות לפילטרים שבחרת.
+      </section>
+
+      <section class="empty-state" x-show="error">
+        <strong x-text="error"></strong>
+      </section>
+    </section>
+
+    <section class="panel help-card" style="margin-top:1rem;">
+      <div class="panel-heading">
+        <div>
+          <h3>Expected file shape</h3>
+          <div class="help-text">אפשר להעלות JSON array, NDJSON, או טקסט עם שורה אחת לכל אירוע.</div>
+        </div>
+      </div>
+      <ul class="sample-list">
+        <li>{"timestamp":"2026-07-30T10:15:12Z","level":"info","user":"assaf","message":"Started sync job"}</li>
+        <li>{"time":"2026-07-30 10:16:00","level":"warn","user":"qa-team","message":"Slow response detected"}</li>
+        <li>[2026-07-30 10:17:33] ERROR user=ops message=Connection failed</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    function logViewerPage() {
+      return {
+        theme: localStorage.getItem('log-viewer-theme') || 'light',
+        fileName: '',
+        sourceLabel: 'No file loaded',
+        error: '',
+        isDragging: false,
+        logs: [],
+        filters: {
+          user: '',
+          level: 'all',
+          startTime: '',
+          endTime: ''
+        },
+
+        init() {
+          this.setDemoFile();
+        },
+
+        get hasActiveFilters() {
+          return Boolean(
+            this.filters.user ||
+            this.filters.level !== 'all' ||
+            this.filters.startTime ||
+            this.filters.endTime
+          );
+        },
+
+        get levelOptions() {
+          const levels = new Set(this.logs.map((entry) => entry.level).filter(Boolean));
+          return Array.from(levels).sort((left, right) => left.localeCompare(right));
+        },
+
+        get uniqueUsers() {
+          const users = new Set(this.logs.map((entry) => entry.user).filter(Boolean));
+          return Array.from(users).sort((left, right) => left.localeCompare(right));
+        },
+
+        get filteredLogs() {
+          const userQuery = this.filters.user.trim().toLowerCase();
+          const startMillis = this.filters.startTime ? new Date(this.filters.startTime).getTime() : null;
+          const endMillis = this.filters.endTime ? new Date(this.filters.endTime).getTime() : null;
+
+          return this.logs.filter((entry) => {
+            const matchesUser = !userQuery || (entry.user || '').toLowerCase().includes(userQuery);
+            const matchesLevel = this.filters.level === 'all' || entry.level === this.filters.level;
+            const entryMillis = entry.millis ?? null;
+            const matchesStart = startMillis === null || (entryMillis !== null && entryMillis >= startMillis);
+            const matchesEnd = endMillis === null || (entryMillis !== null && entryMillis <= endMillis);
+            return matchesUser && matchesLevel && matchesStart && matchesEnd;
+          });
+        },
+
+        get completionPercent() {
+          if (!this.logs.length) {
+            return 0;
+          }
+          return Math.round((this.filteredLogs.length / this.logs.length) * 100);
+        },
+
+        get timeSpanLabel() {
+          if (!this.filteredLogs.length) {
+            return 'No matching range yet';
+          }
+          const first = this.filteredLogs[0];
+          const last = this.filteredLogs[this.filteredLogs.length - 1];
+          return `${first.timestampLabel} → ${last.timestampLabel}`;
+        },
+
+        toggleTheme() {
+          this.theme = this.theme === 'dark' ? 'light' : 'dark';
+          localStorage.setItem('log-viewer-theme', this.theme);
+        },
+
+        clearFilters() {
+          this.filters.user = '';
+          this.filters.level = 'all';
+          this.filters.startTime = '';
+          this.filters.endTime = '';
+        },
+
+        levelClass(level) {
+          const normalized = (level || '').toLowerCase();
+          if (['fatal', 'error', 'err'].includes(normalized)) return 'level-error';
+          if (['warn', 'warning'].includes(normalized)) return 'level-warn';
+          if (['info', 'information'].includes(normalized)) return 'level-info';
+          if (['debug'].includes(normalized)) return 'level-debug';
+          if (['trace'].includes(normalized)) return 'level-trace';
+          return 'level-debug';
+        },
+
+        handleDrop(event) {
+          this.isDragging = false;
+          const [file] = event.dataTransfer.files || [];
+          if (file) {
+            this.loadFile(file);
+          }
+        },
+
+        handleFileSelected(event) {
+          const [file] = event.target.files || [];
+          if (file) {
+            this.loadFile(file);
+          }
+        },
+
+        async loadFile(file) {
+          this.error = '';
+          this.fileName = file.name;
+          this.sourceLabel = 'Loading file';
+
+          try {
+            const text = await file.text();
+            const parsed = this.parseLogs(text, file.name);
+            this.logs = parsed;
+            this.sourceLabel = `${parsed.length} entries from ${file.name}`;
+            if (!parsed.length) {
+              this.error = 'הקובץ נטען, אבל לא זוהו בו רשומות לוג תקינות.';
+            }
+          } catch (error) {
+            this.logs = [];
+            this.sourceLabel = 'No file loaded';
+            this.error = `Failed to parse ${file.name}. Use JSON, NDJSON, or the supported text format.`;
+          }
+        },
+
+        setDemoFile() {
+          const demo = `[
+  {"timestamp":"2026-07-30T09:15:12Z","level":"info","user":"assaf","message":"Started test run"},
+  {"timestamp":"2026-07-30T09:18:44Z","level":"warn","user":"qa-team","message":"Slow response in checkout flow"},
+  {"timestamp":"2026-07-30T09:22:01Z","level":"error","user":"ops","message":"Connection dropped while syncing logs"},
+  {"timestamp":"2026-07-30T09:25:33Z","level":"debug","user":"assaf","message":"Inspecting run context"},
+  {"timestamp":"2026-07-30T09:31:09Z","level":"info","user":"devops","message":"Sync job finished"}
+]`;
+          this.fileName = 'sample-logs.json';
+          this.sourceLabel = 'Demo data';
+          this.error = '';
+          this.logs = this.parseLogs(demo, this.fileName);
+        },
+
+        parseLogs(text, fileName) {
+          const trimmed = text.trim();
+          if (!trimmed) {
+            return [];
+          }
+
+          if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+            try {
+              const payload = JSON.parse(trimmed);
+              return this.normalizePayload(payload, fileName);
+            } catch (error) {
+              // fall through to line parsing
+            }
+          }
+
+          const lines = trimmed.split(/\r?\n/).filter(Boolean);
+          const entries = [];
+          lines.forEach((line, index) => {
+            const parsed = this.parseLine(line, fileName, index);
+            if (parsed) {
+              entries.push(parsed);
+            }
+          });
+          return entries;
+        },
+
+        normalizePayload(payload, fileName) {
+          const list = Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload.logs)
+              ? payload.logs
+              : Array.isArray(payload.entries)
+                ? payload.entries
+                : [];
+
+          return list.map((entry, index) => this.normalizeEntry(entry, fileName, index)).filter(Boolean);
+        },
+
+        normalizeEntry(entry, fileName, index) {
+          if (typeof entry !== 'object' || entry === null) {
+            return null;
+          }
+
+          const timestamp = entry.timestamp || entry.time || entry.datetime || entry.date || '';
+          const millis = this.parseMillis(timestamp);
+          const level = String(entry.level || entry.severity || entry.type || 'info').toLowerCase();
+          const user = String(entry.user || entry.username || entry.actor || '').trim();
+          const message = String(entry.message || entry.msg || entry.text || entry.details || '').trim();
+
+          return {
+            id: `${fileName}-${index}-${millis ?? index}`,
+            fileName,
+            source: fileName,
+            raw: entry,
+            level,
+            levelLabel: level.toUpperCase(),
+            user,
+            message: message || JSON.stringify(entry),
+            millis,
+            timestampLabel: this.formatTimestamp(timestamp, millis),
+            timeDisplay: this.formatClock(timestamp, millis)
+          };
+        },
+
+        parseLine(line, fileName, index) {
+          const jsonLike = line.trim().startsWith('{');
+          if (jsonLike) {
+            try {
+              return this.normalizeEntry(JSON.parse(line), fileName, index);
+            } catch (error) {
+              // continue to structured text parsing
+            }
+          }
+
+          const structured = line.match(/^\s*(?:\[(?<timestamp>[^\]]+)\]|(?<timestamp2>\d{4}-\d{2}-\d{2}[T\s][^\s]+))\s*[-|]?\s*(?:\[(?<level1>[^\]]+)\]|(?<level2>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL))\s*[-|]?\s*(?:(?:user|u|user=)(?<user1>[^\s:|]+)|(?<user2>[^:|]+))?\s*[:|-]?\s*(?<message>.*)$/i);
+          if (structured) {
+            const groups = structured.groups || {};
+            const timestamp = groups.timestamp || groups.timestamp2 || '';
+            const level = String(groups.level1 || groups.level2 || 'info').toLowerCase();
+            const user = String(groups.user1 || groups.user2 || '').trim().replace(/^user=/i, '');
+            const message = String(groups.message || '').trim();
+            const millis = this.parseMillis(timestamp);
+            return {
+              id: `${fileName}-${index}-${millis ?? index}`,
+              fileName,
+              source: fileName,
+              raw: line,
+              level,
+              levelLabel: level.toUpperCase(),
+              user,
+              message: message || line.trim(),
+              millis,
+              timestampLabel: this.formatTimestamp(timestamp, millis),
+              timeDisplay: this.formatClock(timestamp, millis)
+            };
+          }
+
+          return null;
+        },
+
+        parseMillis(value) {
+          if (!value) {
+            return null;
+          }
+          const normalized = String(value).trim().replace(' ', 'T');
+          const millis = Date.parse(normalized);
+          return Number.isNaN(millis) ? null : millis;
+        },
+
+        formatTimestamp(value, millis) {
+          if (millis === null && !value) {
+            return 'Unknown time';
+          }
+          if (millis === null) {
+            return String(value);
+          }
+          return new Intl.DateTimeFormat('he-IL', {
+            dateStyle: 'medium',
+            timeStyle: 'medium'
+          }).format(new Date(millis));
+        },
+
+        formatClock(value, millis) {
+          if (millis === null && !value) {
+            return 'n/a';
+          }
+          if (millis === null) {
+            return String(value);
+          }
+          return new Intl.DateTimeFormat('he-IL', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }).format(new Date(millis));
+        },
+
+        downloadSample() {
+          if (!this.filteredLogs.length) {
+            return;
+          }
+          const payload = this.filteredLogs.map((entry) => ({
+            timestamp: entry.timestampLabel,
+            level: entry.level,
+            user: entry.user,
+            message: entry.message
+          }));
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'filtered-logs.json';
+          link.click();
+          URL.revokeObjectURL(url);
+        }
+      };
+    }
+  </script>
+</body>
+</html>

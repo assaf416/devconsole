@@ -1,0 +1,1368 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mockup - Dev Control IDE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Cascadia+Code:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/csszero@8.1.2/csszero.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <style>
+    :root {
+      --bg: #1e1e1e;
+      --panel: #252526;
+      --panel-2: #2d2d30;
+      --panel-3: #333337;
+      --border: #3c3c3c;
+      --text: #d4d4d4;
+      --muted: #9da1a6;
+      --accent: #0e639c;
+      --accent-2: #1177bb;
+      --ok: #4ec9b0;
+      --warn: #d7ba7d;
+      --err: #f48771;
+      --tree-active: #37373d;
+      --tree-hover: #2a2d2e;
+      --shadow: 0 12px 22px rgba(0, 0, 0, 0.26);
+    }
+
+    [data-theme="light"] {
+      --bg: #f3f3f3;
+      --panel: #ffffff;
+      --panel-2: #f7f7f7;
+      --panel-3: #ececec;
+      --border: #d0d0d0;
+      --text: #1f1f1f;
+      --muted: #5a5a5a;
+      --accent: #005a9e;
+      --accent-2: #0e6dba;
+      --ok: #0b7a65;
+      --warn: #9c6a00;
+      --err: #b42318;
+      --tree-active: #dfdfdf;
+      --tree-hover: #ededed;
+      --shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+    }
+
+    body {
+      font-family: "Assistant", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: 46px 1fr 26px;
+    }
+
+    .topbar {
+      background: var(--panel-2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0 0.8rem;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14, 99, 156, 0.22);
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      direction: rtl;
+    }
+
+    .menu-wrap {
+      position: relative;
+    }
+
+    .avatar-btn {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--border);
+      background: transparent;
+      border-radius: 50%;
+      padding: 0;
+      cursor: pointer;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .profile-panel {
+      position: absolute;
+      top: 44px;
+      left: 0;
+      z-index: 22;
+      min-width: 230px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .profile-head {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-2);
+    }
+
+    .profile-head img {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--border);
+    }
+
+    .profile-meta {
+      display: grid;
+      gap: 0.1rem;
+    }
+
+    .profile-item {
+      width: 100%;
+      border: 0;
+      border-bottom: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      padding: 0.75rem;
+      font: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+      text-align: right;
+    }
+
+    .profile-item:last-child {
+      border-bottom: 0;
+    }
+
+    .profile-item:hover {
+      background: var(--panel-3);
+    }
+
+    .profile-section {
+      border-top: 1px solid var(--border);
+      padding-top: 0.2rem;
+    }
+
+    .profile-section-title {
+      padding: 0.6rem 0.75rem 0.35rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .tool-btn {
+      border: 1px solid var(--border);
+      background: var(--panel-3);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 0.38rem 0.72rem;
+      font: inherit;
+      cursor: pointer;
+      transition: 120ms ease;
+      text-align: right;
+    }
+
+    .tool-btn:hover {
+      border-color: var(--accent-2);
+    }
+
+    .tool-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .workbench {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+    }
+
+    .sidebar {
+      min-width: 0;
+      border-left: 1px solid var(--border);
+      background: var(--panel);
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .sidebar-head {
+      border-bottom: 1px solid var(--border);
+      padding: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .tree {
+      padding: 0.35rem;
+      overflow: auto;
+      font-family: "Cascadia Code", monospace;
+      font-size: 0.92rem;
+    }
+
+    .tree-item,
+    .tree-folder {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      border-radius: 6px;
+      padding: 0.38rem 0.5rem;
+      cursor: pointer;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .tree-item:hover,
+    .tree-folder:hover {
+      background: var(--tree-hover);
+    }
+
+    .tree-item.active {
+      background: var(--tree-active);
+    }
+
+    .tree-group {
+      margin-right: 1.15rem;
+      border-right: 1px dashed var(--border);
+      padding-right: 0.65rem;
+    }
+
+    .main {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      background: var(--bg);
+    }
+
+    .editor {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 54px 1fr;
+    }
+
+    .action-strip {
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+      padding: 0.45rem 0.6rem;
+      direction: rtl;
+    }
+
+    .context-path {
+      font-family: "Cascadia Code", monospace;
+      color: var(--muted);
+      font-size: 0.86rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .run-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      direction: rtl;
+    }
+
+    .run-btn {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--panel-3);
+      color: var(--text);
+      padding: 0.35rem 0.6rem;
+      cursor: pointer;
+      font: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      min-width: 86px;
+      justify-content: center;
+      direction: rtl;
+    }
+
+    .run-btn img {
+      width: 16px;
+      height: 16px;
+    }
+
+    .run-btn.start {
+      border-color: rgba(78, 201, 176, 0.5);
+    }
+
+    .run-btn.stop {
+      border-color: rgba(244, 135, 113, 0.5);
+    }
+
+    .run-btn.report {
+      border-color: rgba(215, 186, 125, 0.5);
+    }
+
+    .view {
+      min-height: 0;
+      overflow: auto;
+      padding: 1rem;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 10px;
+      padding: 0.9rem;
+      box-shadow: var(--shadow);
+    }
+
+    .grid {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .grid.cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kpi {
+      font-family: "Cascadia Code", monospace;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 0.3rem;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .status {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.16rem 0.55rem;
+      font-size: 0.83rem;
+      margin-left: 0.35rem;
+    }
+
+    .status.ok {
+      color: var(--ok);
+      border-color: rgba(78, 201, 176, 0.45);
+    }
+
+    .status.warn {
+      color: var(--warn);
+      border-color: rgba(215, 186, 125, 0.4);
+    }
+
+    .status.err {
+      color: var(--err);
+      border-color: rgba(244, 135, 113, 0.45);
+    }
+
+    .list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .list-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .filter-bar {
+      display: grid;
+      grid-template-columns: 1.7fr 1fr 1fr;
+      gap: 0.55rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .filter-input,
+    .filter-select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--panel-3);
+      color: var(--text);
+      padding: 0.45rem 0.55rem;
+      font: inherit;
+    }
+
+    .meta-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.35rem;
+    }
+
+    .attach-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border: 1px solid var(--border);
+      background: var(--panel-3);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 0.16rem 0.5rem;
+      font-size: 0.82rem;
+    }
+
+    .issue-layout {
+      display: block;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin: 0.85rem 0 1rem;
+      direction: rtl;
+      justify-content: flex-start;
+    }
+
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.42rem;
+      border: 1px solid var(--border);
+      background: var(--panel-3);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 0.45rem 0.7rem;
+      font: inherit;
+      cursor: pointer;
+      direction: rtl;
+      text-align: right;
+    }
+
+    .icon-btn img {
+      width: 16px;
+      height: 16px;
+    }
+
+    .icon-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .thumb-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--panel-3);
+    }
+
+    .thumb-image {
+      width: 100%;
+      height: 132px;
+      display: block;
+      object-fit: cover;
+      background: linear-gradient(135deg, #2f3540, #20242b);
+    }
+
+    .thumb-meta {
+      padding: 0.55rem;
+      display: grid;
+      gap: 0.3rem;
+      font-size: 0.84rem;
+    }
+
+    .thumb-actions {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+
+    .code-editor {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #1b1b1d;
+      color: #dcdcdc;
+      font-family: "Cascadia Code", monospace;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      padding: 0.75rem;
+      min-height: 290px;
+      white-space: pre;
+      overflow: auto;
+    }
+
+    .gherkin .keyword {
+      color: #4ec9b0;
+      font-weight: 700;
+    }
+
+    .gherkin .title {
+      color: #9cdcfe;
+    }
+
+    .gherkin .string {
+      color: #ce9178;
+    }
+
+    .gherkin .comment {
+      color: #6a9955;
+    }
+
+    [data-theme="light"] .gherkin .keyword {
+      color: #006a60;
+    }
+
+    [data-theme="light"] .gherkin .title {
+      color: #0451a5;
+    }
+
+    [data-theme="light"] .gherkin .string {
+      color: #a31515;
+    }
+
+    [data-theme="light"] .gherkin .comment {
+      color: #098658;
+    }
+
+    .test-split-shell {
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .test-split {
+      display: grid;
+      min-height: 520px;
+      max-height: calc(100vh - 200px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--panel);
+    }
+
+    .split-pane {
+      min-height: 0;
+      overflow: auto;
+      padding: 0.85rem;
+    }
+
+    .splitter {
+      border: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-3);
+      cursor: row-resize;
+      width: 100%;
+      position: relative;
+    }
+
+    .splitter::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 50%;
+      transform: translate(50%, -50%);
+      width: 42px;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--muted);
+      opacity: 0.65;
+    }
+
+    .run-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.55rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    [data-theme="light"] .code-editor {
+      background: #fafafa;
+      color: #222;
+    }
+
+    .chat {
+      width: 0;
+      transition: width 180ms ease;
+      border-right: 1px solid transparent;
+      overflow: hidden;
+      background: var(--panel-2);
+    }
+
+    .chat.open {
+      width: 340px;
+      border-right-color: var(--border);
+    }
+
+    .chat-shell {
+      width: 340px;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .chat-head,
+    .chat-foot {
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem;
+      background: var(--panel);
+    }
+
+    .chat-foot {
+      border-top: 1px solid var(--border);
+      border-bottom: 0;
+    }
+
+    .chat-body {
+      overflow: auto;
+      padding: 0.75rem;
+      display: grid;
+      gap: 0.65rem;
+      align-content: start;
+    }
+
+    .bubble {
+      max-width: 90%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.65rem;
+      background: var(--panel);
+      font-size: 0.92rem;
+    }
+
+    .bubble.user {
+      margin-right: auto;
+      border-color: rgba(17, 119, 187, 0.6);
+      background: rgba(17, 119, 187, 0.18);
+    }
+
+    .chat-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel-3);
+      color: var(--text);
+      padding: 0.55rem 0.65rem;
+      font: inherit;
+    }
+
+    .statusbar {
+      border-top: 1px solid #0a4f7d;
+      background: var(--accent);
+      color: #e9f5ff;
+      font-size: 0.86rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0.75rem;
+      font-family: "Cascadia Code", monospace;
+    }
+
+    @media (max-width: 1100px) {
+      .workbench {
+        grid-template-columns: 260px 1fr;
+      }
+
+      .chat.open {
+        width: 280px;
+      }
+
+      .chat-shell {
+        width: 280px;
+      }
+
+      .grid.cols-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .thumb-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .workbench {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .chat.open {
+        position: absolute;
+        inset: 46px 0 26px auto;
+        z-index: 8;
+        width: min(86vw, 320px);
+      }
+
+      .chat-shell {
+        width: min(86vw, 320px);
+      }
+    }
+  </style>
+</head>
+<body x-data="ideMockup()" :data-theme="theme" @mousemove.window="onSplitDrag($event)" @mouseup.window="stopSplitDrag()">
+  <div class="app" hx-boost="true">
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <span>מרכז הבקרה למפתחים</span>
+      </div>
+
+      <div class="toolbar">
+        <div class="menu-wrap" @keydown.escape.window="profileMenuOpen = false">
+          <button class="avatar-btn" type="button" @click="profileMenuOpen = !profileMenuOpen" title="תפריט משתמש">
+            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=80" alt="User profile image">
+          </button>
+          <div class="profile-panel" x-show="profileMenuOpen" x-transition.opacity @click.outside="profileMenuOpen = false">
+            <div class="profile-head">
+              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=80" alt="User profile image">
+              <div class="profile-meta">
+                <strong>אסף לוי</strong>
+                <span class="muted">Engineering Lead</span>
+              </div>
+            </div>
+            <button class="profile-item" type="button" @click="profileMenuOpen = false">
+              <span>👤</span>
+              <span>עדכון פרופיל</span>
+            </button>
+            <button class="profile-item" type="button" @click="toggleTheme(); profileMenuOpen = false;">
+              <span>🎨</span>
+              <span x-text="theme === 'dark' ? 'מעבר למצב בהיר' : 'מעבר למצב כהה'"></span>
+            </button>
+            <button class="profile-item" type="button" @click="profileMenuOpen = false">
+              <span>🌐</span>
+              <span>שינוי שפה</span>
+            </button>
+            <button class="profile-item" type="button" @click="chatOpen = !chatOpen; profileMenuOpen = false;">
+              <span>💬</span>
+              <span x-text="chatOpen ? 'סגור צ׳אט' : 'פתח צ׳אט'"></span>
+            </button>
+
+            <template x-if="activeView === 'issues' || activeView === 'issue-detail'">
+              <div class="profile-section">
+                <div class="profile-section-title">פעולות על תקלות</div>
+                <button class="profile-item" type="button" hx-get="/api/issues/pull" hx-trigger="click" @click="profileMenuOpen = false;">
+                  <span>⬇</span>
+                  <span>משוך אחרונים</span>
+                </button>
+                <button class="profile-item" type="button" hx-post="/api/issues/merge-main" hx-trigger="click" @click="profileMenuOpen = false;">
+                  <span>⎇</span>
+                  <span>מזג למיין</span>
+                </button>
+                <button class="profile-item" type="button" hx-put="/api/issues/update" hx-trigger="click" @click="profileMenuOpen = false;">
+                  <span>↩</span>
+                  <span>משוך אחורה</span>
+                </button>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <template x-if="activeView === 'tests' || activeView === 'test-detail'">
+          <div class="toolbar" style="gap:0.45rem;">
+            <button class="tool-btn primary" hx-post="/api/tests/run" hx-trigger="click">הרץ בדיקות</button>
+            <button class="tool-btn" hx-post="/api/tests/stop" hx-trigger="click">עצור הרצה</button>
+            <button class="tool-btn" hx-post="/api/tests/save" hx-trigger="click">שמור קובץ</button>
+          </div>
+        </template>
+      </div>
+    </header>
+
+    <section class="workbench">
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <strong>סייר קבצים</strong>
+          <span class="muted">מאגר: fintech-core</span>
+        </div>
+
+        <nav class="tree">
+          <div class="tree-folder" @click="setView('project')" :class="activeView === 'project' ? 'active' : ''">
+            <span>▾</span>
+            <span>פרויקט</span>
+          </div>
+          <div class="tree-group">
+            <a class="tree-item" href="#" @click.prevent="setView('issues')" :class="activeView === 'issues' || activeView === 'issue-detail' ? 'active' : ''">
+              <span>🟦</span>
+              <span>תקלות</span>
+              <span class="muted">(24)</span>
+            </a>
+            <a class="tree-item" href="#" @click.prevent="setView('prs')" :class="activeView === 'prs' ? 'active' : ''">
+              <span>🟪</span>
+              <span>בקשות משיכה</span>
+              <span class="muted">(7)</span>
+            </a>
+            <a class="tree-item" href="#" @click.prevent="setView('ci')" :class="activeView === 'ci' ? 'active' : ''">
+              <span>🟩</span>
+              <span>תוצאות CI אחרונות</span>
+            </a>
+          </div>
+
+          <div class="tree-folder" @click="setView('tests')" :class="activeView === 'tests' || activeView === 'test-detail' ? 'active' : ''" style="margin-top:0.35rem;">
+            <span>▾</span>
+            <span>בדיקות</span>
+          </div>
+          <div class="tree-group">
+            <a class="tree-item" href="#" @click.prevent="setView('tests')">
+              <span>📄</span>
+              <span>checkout.feature</span>
+            </a>
+            <a class="tree-item" href="#" @click.prevent="setView('test-detail')">
+              <span>📄</span>
+              <span>login.feature</span>
+            </a>
+            <a class="tree-item" href="#" @click.prevent="setView('test-detail')">
+              <span>📄</span>
+              <span>refunds.feature</span>
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <section class="editor">
+          <div class="action-strip">
+            <div class="context-path" x-text="contextTitle()"></div>
+            <div class="run-actions">
+              <button class="run-btn start" hx-post="/api/session/start" hx-trigger="click">
+                <img src="https://img.icons8.com/fluency/16/play--v1.png" alt="start">
+                <span>▶</span>
+                <span>התחל</span>
+              </button>
+              <button class="run-btn stop" hx-post="/api/session/stop" hx-trigger="click">
+                <img src="https://img.icons8.com/fluency/16/stop.png" alt="stop">
+                <span>■</span>
+                <span>עצור</span>
+              </button>
+              <button class="run-btn report" hx-get="/api/session/report" hx-trigger="click">
+                <img src="https://img.icons8.com/fluency/16/combo-chart.png" alt="report">
+                <span>▤</span>
+                <span>דוח</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="view">
+            <template x-if="activeView === 'project'">
+              <section class="grid cols-2">
+                <article class="panel">
+                  <h3 style="margin-top:0;">סיכום מאגר אחרון</h3>
+                  <p class="muted">נתונים אחרונים ממשיכת GitHub ומוצגים בעברית בתוך ה-IDE.</p>
+                  <div class="list-row">
+                    <span>תקלות פתוחות</span>
+                    <strong class="kpi" style="margin:0;">24</strong>
+                  </div>
+                  <div class="list-row">
+                    <span>בקשות משיכה פתוחות</span>
+                    <strong class="kpi" style="margin:0;">7</strong>
+                  </div>
+                  <div class="list-row">
+                    <span>סטטוס CI אחרון</span>
+                    <span class="status ok">עבר</span>
+                  </div>
+                </article>
+
+                <article class="panel">
+                  <h3 style="margin-top:0;">פעולות מהירות</h3>
+                  <div class="grid">
+                    <button class="tool-btn" @click="setView('tests')">מעבר למסך בדיקות</button>
+                    <button class="tool-btn" @click="setView('ci')">צפייה בתוצאות CI</button>
+                    <button class="tool-btn" @click="setView('issues')">מעבר למסך תקלות</button>
+                  </div>
+                </article>
+              </section>
+            </template>
+
+            <template x-if="activeView === 'issues'">
+              <section class="panel">
+                <h3 style="margin-top:0;">תקלות במאגר</h3>
+                <p class="muted">מקור: GitHub API | עדכון אחרון: לפני 2 דקות</p>
+                <div class="list-row">
+                  <div>
+                    <strong>#214</strong> תקלה ביציבות בעדכון הזמנות
+                    <div class="muted">assigned: assaf | label: backend</div>
+                    <div class="meta-inline">
+                      <span class="attach-chip">📎 3 attachments</span>
+                      <span class="attach-chip">🖼 2 screenshots</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="status warn">בטיפול</span>
+                    <button class="tool-btn" @click="setView('issue-detail')">פתח</button>
+                  </div>
+                </div>
+                <div class="list-row">
+                  <div>
+                    <strong>#208</strong> כשל בדיקות עברית בתרחישי Login
+                    <div class="muted">assigned: qa-team | label: tests</div>
+                    <div class="meta-inline">
+                      <span class="attach-chip">📎 1 attachment</span>
+                      <span class="attach-chip">🖼 screenshot</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="status err">דחוף</span>
+                    <button class="tool-btn" @click="setView('issue-detail')">פתח</button>
+                  </div>
+                </div>
+                <div class="list-row">
+                  <div>
+                    <strong>#201</strong> שיפור תצוגת CI בעברית
+                    <div class="muted">assigned: ui-team | label: ux</div>
+                    <div class="meta-inline">
+                      <span class="attach-chip">ללא קבצים מצורפים</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="status ok">פתוח</span>
+                    <button class="tool-btn" @click="setView('issue-detail')">פתח</button>
+                  </div>
+                </div>
+              </section>
+            </template>
+
+            <template x-if="activeView === 'issue-detail'">
+              <section class="issue-layout">
+                <article class="panel">
+                  <h3 style="margin-top:0;">Issue #214 - תקלה ביציבות בעדכון הזמנות</h3>
+                  <p class="muted">מצב: בטיפול | נפתח על ידי: devops-bot | עודכן: לפני שעה</p>
+                  <div class="meta-inline" style="margin-bottom:0.75rem;">
+                    <span class="attach-chip">📎 3 קבצים מצורפים</span>
+                    <span class="attach-chip">🖼 2 צילומי מסך</span>
+                    <span class="attach-chip">📄 1 log.txt</span>
+                  </div>
+                  <div class="hero-actions">
+                    <button class="icon-btn primary" hx-put="/api/issues/214" hx-trigger="click">
+                      <img src="https://img.icons8.com/fluency/16/edit-property.png" alt="update issue">
+                      <span>✎</span>
+                      <span>עדכון Issue</span>
+                    </button>
+                    <button class="icon-btn" hx-post="/api/issues/214/comment" hx-trigger="click">
+                      <img src="https://img.icons8.com/fluency/16/topic.png" alt="comment issue">
+                      <span>💬</span>
+                      <span>הוסף תגובה</span>
+                    </button>
+                    <button class="icon-btn" hx-post="/api/issues/214/create-pr" hx-trigger="click">
+                      <img src="https://img.icons8.com/fluency/16/pull-request.png" alt="create pr">
+                      <span>⇅</span>
+                      <span>פתח PR מתקן</span>
+                    </button>
+                    <button class="icon-btn" hx-post="/api/prs/merge-main" hx-trigger="click">
+                      <img src="https://img.icons8.com/fluency/16/git-merge.png" alt="merge main">
+                      <span>⎇</span>
+                      <span>מזג ל-main</span>
+                    </button>
+                  </div>
+                  <p>
+                    בעת ריצה מקבילה של בדיקות קיוקמבר, שירות ההזמנות מחזיר 500 באופן אקראי.
+                    נדרש לבצע עדכון לוגיקה ב-transaction ולוודא שחוזר קוד שגיאה ברור.
+                  </p>
+                  <h4>צעדים מוצעים</h4>
+                  <ul>
+                    <li>להוסיף retry עם backoff באזור הקריטי</li>
+                    <li>לשפר לוגים ולשייך מזהה trace לכל הרצה</li>
+                    <li>לעדכן בדיקת cucumber לאימות כשל מבוקר</li>
+                  </ul>
+
+                  <h4>סטטוס קישור ל-PR</h4>
+                  <p><strong>PR #771</strong> Refactor order transaction path <span class="status warn">ממתין סקירה</span></p>
+
+                  <div class="panel" style="margin-top:0.9rem; padding:0.8rem;">
+                    <h4 style="margin-top:0;">קבצים מצורפים</h4>
+                    <p class="muted">צילומי מסך וקבצים מצורפים מוצגים בתוך אותו פאנל מרכזי.</p>
+                    <div class="thumb-grid">
+                      <div class="thumb-card">
+                        <img class="thumb-image" src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80" alt="Screenshot checkout error">
+                        <div class="thumb-meta">
+                          <strong>checkout-error.png</strong>
+                          <span class="muted">1280x720 | uploaded by assaf</span>
+                          <div class="thumb-actions">
+                            <button class="tool-btn">צפה</button>
+                            <button class="tool-btn">הורד</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="thumb-card">
+                        <img class="thumb-image" src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80" alt="Screenshot logs panel">
+                        <div class="thumb-meta">
+                          <strong>logs-panel.png</strong>
+                          <span class="muted">1440x900 | uploaded by qa-team</span>
+                          <div class="thumb-actions">
+                            <button class="tool-btn">צפה</button>
+                            <button class="tool-btn">הורד</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="margin-top:0.8rem;">
+                      <div class="list-row">
+                        <div>
+                          <strong>failure-log.txt</strong>
+                          <div class="muted">24KB | text/plain</div>
+                        </div>
+                        <button class="tool-btn">פתח</button>
+                      </div>
+                      <div class="list-row">
+                        <div>
+                          <strong>browser-state.json</strong>
+                          <div class="muted">8KB | application/json</div>
+                        </div>
+                        <button class="tool-btn">פתח</button>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </section>
+            </template>
+
+            <template x-if="activeView === 'prs'">
+              <section class="panel">
+                <h3 style="margin-top:0;">בקשות משיכה אחרונות</h3>
+                <div class="list-row">
+                  <span>#771 Refactor order transaction path</span>
+                  <span class="status warn">ממתין סקירה</span>
+                </div>
+                <div class="list-row">
+                  <span>#768 Improve RTL issue page layout</span>
+                  <span class="status ok">מוכן למיזוג</span>
+                </div>
+                <div class="list-row">
+                  <span>#761 Add CI snapshot widget</span>
+                  <span class="status err">נכשל CI</span>
+                </div>
+              </section>
+            </template>
+
+            <template x-if="activeView === 'ci'">
+              <section class="panel">
+                <h3 style="margin-top:0;">תוצאות CI אחרונות</h3>
+                <div class="list-row">
+                  <span>build-and-test / main</span>
+                  <span class="status ok">עבר</span>
+                </div>
+                <div class="list-row">
+                  <span>hebrew-cucumber-suite / main</span>
+                  <span class="status warn">2 נכשלים</span>
+                </div>
+                <div class="list-row">
+                  <span>security-scan / main</span>
+                  <span class="status ok">עבר</span>
+                </div>
+                <p class="muted" style="margin-top:0.7rem;">אפשר לשלב פה קישור ישיר ללוגי ריצה מתוך GitHub Actions.</p>
+              </section>
+            </template>
+
+            <template x-if="activeView === 'tests'">
+              <section class="panel">
+                <h3 style="margin-top:0;">מסך בדיקות</h3>
+                <div class="filter-bar">
+                  <input class="filter-input" type="search" placeholder="חיפוש בדיקה..." x-model="testFilters.search">
+                  <select class="filter-select" x-model="testFilters.kind">
+                    <option value="all">סוג: הכל</option>
+                    <option value="failed">סוג: נכשלו</option>
+                    <option value="passed">סוג: עברו</option>
+                  </select>
+                  <select class="filter-select" x-model="testFilters.created">
+                    <option value="all">נוצרו: הכל</option>
+                    <option value="today">נוצרו: היום</option>
+                    <option value="week">נוצרו: השבוע</option>
+                  </select>
+                </div>
+
+                <template x-for="test in filteredTests" :key="test.name">
+                  <div class="list-row">
+                    <div>
+                      <strong x-text="test.name"></strong>
+                      <div class="muted" x-text="test.updatedText"></div>
+                    </div>
+                    <div>
+                      <span class="status" :class="test.kind === 'passed' ? 'ok' : 'err'" x-text="test.kind === 'passed' ? 'עבר' : 'נכשל'"></span>
+                      <button class="tool-btn primary" hx-post="/api/tests/run" hx-trigger="click">הרץ</button>
+                      <button class="tool-btn" @click="setView('test-detail')">ערוך</button>
+                    </div>
+                  </div>
+                </template>
+
+                <template x-if="!filteredTests.length">
+                  <p class="muted" style="margin-top:0.8rem;">לא נמצאו בדיקות לפי הסינון הנוכחי.</p>
+                </template>
+              </section>
+            </template>
+
+            <template x-if="activeView === 'test-detail'">
+              <section class="panel test-split-shell">
+                <h3 style="margin-top:0; margin-bottom:0;">בדיקה פעילה: login.feature</h3>
+                <div class="muted">תצוגה מפוצלת אנכית: למעלה קוד הבדיקה, למטה סטטוס ריצה ולוג בזמן אמת. ניתן לגרור את המפריד לגודל רצוי.</div>
+                <div class="test-split" x-ref="testSplit" :style="`grid-template-rows:${splitPercent}% 8px ${100 - splitPercent}%`">
+                  <div class="split-pane">
+                    <div class="code-editor gherkin" x-html="highlightGherkin(gherkinSample)"></div>
+                  </div>
+                  <button class="splitter" type="button" @mousedown.prevent="startSplitDrag()" title="גרירת חלוקה"></button>
+                  <div class="split-pane">
+                    <div class="run-status">
+                      <div>
+                        <strong>סטטוס ריצה אונליין</strong>
+                        <div class="muted" style="font-size:0.9rem;">רץ: cucumber-he | ענף: main</div>
+                      </div>
+                      <span class="status ok">רץ כעת</span>
+                    </div>
+                    <div class="code-editor">[12:08:11] Starting cucumber login.feature
+[12:08:13] Runner connected to agent-02
+[12:08:15] Scenario: התחברות עם פרטים תקינים ... PASSED
+[12:08:17] Scenario: התחברות עם סיסמה שגויה ... PASSED
+[12:08:18] Summary: 2 passed, 0 failed
+[12:08:19] Uploading report artifact...
+[12:08:20] Done</div>
+                    <div style="margin-top:0.7rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                      <button class="tool-btn primary" hx-post="/api/tests/login/save" hx-trigger="click">שמור</button>
+                      <button class="tool-btn" hx-post="/api/tests/login/run" hx-trigger="click">הרץ מחדש</button>
+                      <button class="tool-btn" hx-post="/api/tests/login/delete" hx-trigger="click">הסר</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </template>
+          </div>
+        </section>
+
+        <aside class="chat" :class="chatOpen ? 'open' : ''">
+          <section class="chat-shell">
+            <header class="chat-head">
+              <strong>צ׳אט צוות / AI</strong>
+              <div class="muted" style="font-size:0.9rem; margin-top:0.2rem;">פאנל צד אופציונלי</div>
+            </header>
+            <div class="chat-body">
+              <div class="bubble">המערכת סנכרנה 24 תקלות ו-7 בקשות משיכה. האם לעדכן את עץ הפרויקט?</div>
+              <div class="bubble user">כן, וגם תציג רק תקלות עם התווית tests.</div>
+              <div class="bubble">בוצע. נמצאו 6 תקלות רלוונטיות לבדיקות.</div>
+            </div>
+            <footer class="chat-foot">
+              <input class="chat-input" type="text" placeholder="כתוב הודעה..." disabled>
+            </footer>
+          </section>
+        </aside>
+      </main>
+    </section>
+
+    <footer class="statusbar">
+      <span>ענף: main</span>
+      <span>UTF-8 | RTL | Hebrew-first</span>
+      <span>Go + HTMX + Alpine.js + SQLite3</span>
+    </footer>
+  </div>
+
+  <script>
+    function ideMockup() {
+      return {
+        theme: 'dark',
+        activeView: 'project',
+        chatOpen: true,
+        profileMenuOpen: false,
+        splitPercent: 58,
+        isSplitDragging: false,
+        testFilters: {
+          search: '',
+          kind: 'all',
+          created: 'all'
+        },
+        testsData: [
+          {
+            name: 'login.feature',
+            kind: 'passed',
+            createdBucket: 'today',
+            updatedText: 'עודכן לפני 18 דקות'
+          },
+          {
+            name: 'checkout.feature',
+            kind: 'failed',
+            createdBucket: 'week',
+            updatedText: 'עודכן לפני שעה'
+          },
+          {
+            name: 'refunds.feature',
+            kind: 'passed',
+            createdBucket: 'week',
+            updatedText: 'עודכן לפני יום'
+          },
+          {
+            name: 'orders-timeout.feature',
+            kind: 'failed',
+            createdBucket: 'today',
+            updatedText: 'עודכן לפני 4 דקות'
+          }
+        ],
+        gherkinSample: `# language: he
+תכונה: התחברות משתמש
+
+  תרחיש: התחברות עם פרטים תקינים
+    בהינתן שהמשתמש נמצא בעמוד ההתחברות
+    וכאשר הוא מזין "user@test.com" ו-"123456"
+    אז המערכת צריכה להעביר אותו לעמוד הבית
+
+  תרחיש: התחברות עם סיסמה שגויה
+    בהינתן שהמשתמש נמצא בעמוד ההתחברות
+    וכאשר הוא מזין "user@test.com" ו-"wrong"
+    אז תוצג הודעת שגיאה ברורה`,
+
+        setView(view) {
+          this.activeView = view;
+          this.profileMenuOpen = false;
+        },
+
+        toggleTheme() {
+          this.theme = this.theme === 'dark' ? 'light' : 'dark';
+        },
+
+        contextTitle() {
+          const context = {
+            project: 'פרויקט/סקירה.md',
+            issues: 'פרויקט/תקלות.json',
+            'issue-detail': 'פרויקט/תקלות/214.md',
+            prs: 'פרויקט/בקשות-משיכה.json',
+            ci: 'פרויקט/ci/אחרון.json',
+            tests: 'בדיקות/index.view',
+            'test-detail': 'בדיקות/login.feature'
+          };
+          return context[this.activeView] || 'workspace';
+        },
+
+        get filteredTests() {
+          const search = this.testFilters.search.trim().toLowerCase();
+          return this.testsData.filter((test) => {
+            const matchesSearch = !search || test.name.toLowerCase().includes(search);
+            const matchesKind = this.testFilters.kind === 'all' || test.kind === this.testFilters.kind;
+            const matchesCreated = this.testFilters.created === 'all' || test.createdBucket === this.testFilters.created;
+            return matchesSearch && matchesKind && matchesCreated;
+          });
+        },
+
+        startSplitDrag() {
+          this.isSplitDragging = true;
+        },
+
+        stopSplitDrag() {
+          this.isSplitDragging = false;
+        },
+
+        onSplitDrag(event) {
+          if (!this.isSplitDragging || !this.$refs.testSplit) {
+            return;
+          }
+          const rect = this.$refs.testSplit.getBoundingClientRect();
+          const rawPercent = ((event.clientY - rect.top) / rect.height) * 100;
+          const boundedPercent = Math.max(28, Math.min(78, rawPercent));
+          this.splitPercent = Math.round(boundedPercent);
+        },
+
+        escapeHtml(value) {
+          return value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+        },
+
+        colorStrings(value) {
+          return value.replace(/"([^"]*)"/g, '<span class="string">"$1"</span>');
+        },
+
+        highlightGherkin(text) {
+          const lines = text.split('\n');
+          return lines.map((line) => {
+            if (/^\s*#/.test(line)) {
+              return `<span class="comment">${this.escapeHtml(line)}</span>`;
+            }
+
+            const feature = line.match(/^(\s*)(תכונה:)(.*)$/);
+            if (feature) {
+              return `${this.escapeHtml(feature[1])}<span class="keyword">${this.escapeHtml(feature[2])}</span><span class="title">${this.escapeHtml(feature[3])}</span>`;
+            }
+
+            const scenario = line.match(/^(\s*)(תרחיש:)(.*)$/);
+            if (scenario) {
+              return `${this.escapeHtml(scenario[1])}<span class="keyword">${this.escapeHtml(scenario[2])}</span><span class="title">${this.escapeHtml(scenario[3])}</span>`;
+            }
+
+            const step = line.match(/^(\s*)(בהינתן|וכאשר|אז|וגם)(.*)$/);
+            if (step) {
+              const tail = this.colorStrings(this.escapeHtml(step[3]));
+              return `${this.escapeHtml(step[1])}<span class="keyword">${this.escapeHtml(step[2])}</span>${tail}`;
+            }
+
+            return this.colorStrings(this.escapeHtml(line));
+          }).join('\n');
+        }
+      };
+    }
+  </script>
+</body>
+</html>
