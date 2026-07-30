@@ -1,0 +1,321 @@
+<% case @page when 'projects' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-diagram-project"></i> פרויקטים</span>
+      <h1 class="hero-title">ניהול פרויקטים וקישורים</h1>
+      <p class="hero-subtitle">כאן מנהלים שם פרויקט, github_url ו-staging_url, ומרעננים נתונים חיצוניים בעת ההפעלה ובזמן עבודה ידני.</p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">פרויקטים</span><strong><%= @project_stats[:total] %></strong></div>
+        <div class="meta-row"><span class="meta-label">GitHub מקושר</span><strong><%= @project_stats[:linked] %></strong></div>
+        <div class="meta-row"><span class="meta-label">Staging מקושר</span><strong><%= @project_stats[:staged] %></strong></div>
+      </section>
+
+      <section class="panel meta-card">
+        <div class="meta-row" style="padding-top:0;"><span class="meta-label">רענון אחרון</span><strong><%= format_time(sync_runs.first && sync_runs.first['finished_at']) %></strong></div>
+        <div class="meta-row" style="border-bottom:0; padding-bottom:0;"><span class="meta-label">מקור</span><strong>GitHub + Sentry</strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel project-card">
+    <div class="panel-heading">
+      <div>
+        <h2><%= @editing_project ? 'עריכת פרויקט' : 'הוספת פרויקט חדש' %></h2>
+        <div class="help-text">הטופס שומר נתוני פרויקט מלאים ומאפשר לעדכן שדות קיימים.</div>
+      </div>
+      <% if @editing_project %>
+        <a class="button button--soft" href="/projects">בטל עריכה</a>
+      <% end %>
+    </div>
+
+    <form action="<%= @editing_project ? "/projects/#{@editing_project['id']}" : '/projects' %>" method="post" class="project-form-grid">
+      <% if @editing_project %>
+        <input type="hidden" name="id" value="<%= @editing_project['id'] %>">
+      <% end %>
+      <label class="field">
+        <span>שם הפרויקט</span>
+        <input class="input" name="name" value="<%= @editing_project ? @editing_project['name'] : '' %>" placeholder="לדוגמה: DevConsole">
+      </label>
+      <label class="field">
+        <span>github_url</span>
+        <input class="input" name="github_url" value="<%= @editing_project ? @editing_project['github_url'] : '' %>" placeholder="https://github.com/...">
+      </label>
+      <label class="field">
+        <span>staging_url</span>
+        <input class="input" name="staging_url" value="<%= @editing_project ? @editing_project['staging_url'] : '' %>" placeholder="https://staging.example.com">
+      </label>
+      <label class="field" style="grid-column:1 / -1;">
+        <span>תיאור</span>
+        <textarea class="input" name="description" rows="3" placeholder="תיאור קצר של הפרויקט" style="border-radius:14px; min-height:110px;"><%= @editing_project ? @editing_project['description'] : '' %></textarea>
+      </label>
+      <div class="inline-actions" style="grid-column:1 / -1; justify-content:flex-start;">
+        <button class="button button--accent" type="submit"><i class="fa-solid fa-floppy-disk"></i> שמור פרויקט</button>
+        <a class="button" href="/projects"><i class="fa-solid fa-plus"></i> פרויקט חדש</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="project-list">
+    <% @projects.each do |project| %>
+      <article class="panel project-item">
+        <div class="project-top">
+          <div class="project-main">
+            <div class="project-title-row">
+              <span><%= project['name'] %></span>
+              <span class="project-chip">#<%= project['id'] %></span>
+            </div>
+            <p class="project-description"><%= project['description'] %></p>
+          </div>
+          <span class="badge <%= project['last_synced_at'] ? 'badge--ok' : 'badge--muted' %>"><%= project['last_synced_at'] ? 'סונכרן' : 'לא סונכרן' %></span>
+        </div>
+
+        <div class="meta-inline">
+          <span class="meta-chip"><i class="fa-brands fa-github"></i><%= project['github_url'] %></span>
+          <span class="meta-chip"><i class="fa-solid fa-rocket"></i><%= project['staging_url'] %></span>
+          <span class="meta-chip"><i class="fa-solid fa-clock"></i><%= format_time(project['updated_at']) %></span>
+        </div>
+
+        <div class="links">
+          <a class="ghost-link" href="/projects?edit_id=<%= project['id'] %>">ערוך</a>
+          <form action="/projects/<%= project['id'] %>/delete" method="post" onsubmit="return confirm('למחוק את הפרויקט?');">
+            <button class="button" type="submit">מחק</button>
+          </form>
+        </div>
+      </article>
+    <% end %>
+  </section>
+<% when 'stories' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-roadmap"></i> סיפורים</span>
+      <h1 class="hero-title">מעקב התקדמות סיפורים</h1>
+      <p class="hero-subtitle">הנתונים מגיעים מ-<code>stories.json</code> ונשמרים גם ב-SQLite3 לצורך עדכון התקדמות.
+      </p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">סה״כ</span><strong><%= @story_stats[:total] %></strong></div>
+        <div class="meta-row"><span class="meta-label">הושלמו</span><strong><%= @story_stats[:completed] %></strong></div>
+        <div class="meta-row"><span class="meta-label">מקור</span><strong>stories.json</strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel summary-card">
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <span class="source-pill">סיפורים מסונכרנים מהקובץ</span>
+      </div>
+      <div>
+        <strong><%= @story_stats[:total].zero? ? '0%' : "#{(@story_stats[:completed].to_f / @story_stats[:total] * 100).round}%" %></strong>
+        <div class="progress-bar"><span style="width:<%= @story_stats[:total].zero? ? 0 : ((@story_stats[:completed].to_f / @story_stats[:total]) * 100).round %>%"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="story-list">
+    <% @stories.each do |story| %>
+      <article class="panel story-item">
+        <div class="story-top">
+          <div class="story-main">
+            <div class="story-title-row">
+              <span><%= story['story_key'] %></span>
+              <span class="badge <%= story['status'] == 'completed' ? 'badge--ok' : (story['status'] == 'in-progress' ? 'badge--warn' : 'badge--muted') %>"><%= story['status'] %></span>
+            </div>
+            <h2 class="story-title"><%= story['title'] %></h2>
+            <p class="story-desc"><%= story['description'] %></p>
+          </div>
+        </div>
+
+        <div class="summary-grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+          <div class="project-chip">מטרה: <%= story['goal'] %></div>
+          <div class="project-chip">הערכה: <%= story['estimate_hours'] %> שעות</div>
+          <div class="project-chip">בפועל: <%= story['actual_hours'] || 'טרם עודכן' %></div>
+          <div class="project-chip">תלויות: <%= story_dependencies(story).join(', ') %></div>
+        </div>
+
+        <div>
+          <h3>פתרון מוצע</h3>
+          <p class="story-desc"><%= story['solution'] %></p>
+        </div>
+
+        <div>
+          <h3>קריטריוני קבלה</h3>
+          <ul class="criteria">
+            <% story_acceptance(story).each do |criterion| %>
+              <li><%= criterion %></li>
+            <% end %>
+          </ul>
+        </div>
+      </article>
+    <% end %>
+  </section>
+<% when 'logs' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-file-lines"></i> לוגים</span>
+      <h1 class="hero-title">Log viewer</h1>
+      <p class="hero-subtitle">תצוגת דוגמה בתוך המערכת החדשה. אפשר להרחיב כאן לטעינת קובץ ופריסת סינון מתקדמת.</p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">אירועים</span><strong><%= @log_entries.length %></strong></div>
+        <div class="meta-row"><span class="meta-label">משתמשים</span><strong><%= @log_entries.map { |entry| entry['user'] }.uniq.length %></strong></div>
+        <div class="meta-row"><span class="meta-label">רמות</span><strong><%= @log_entries.map { |entry| entry['level'] }.uniq.join(', ') %></strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel log-card">
+    <div class="panel-heading">
+      <div>
+        <h2>Sample logs</h2>
+        <div class="help-text">בשלב הבא אפשר לחבר כאן upload ופעולת פילטר מלאה לפי user/time/level.</div>
+      </div>
+    </div>
+
+    <div class="log-list">
+      <% @log_entries.each do |entry| %>
+        <article class="log-item">
+          <div class="log-top">
+            <div class="log-main">
+              <div class="log-title-row">
+                <span class="level-chip <%= log_level_class(entry['level']) %>"><%= entry['level'].upcase %></span>
+                <span><%= entry['timestamp'] %></span>
+              </div>
+              <div class="entry-meta">
+                <span class="meta-chip"><i class="fa-solid fa-user"></i><%= entry['user'] %></span>
+                <span class="meta-chip"><i class="fa-solid fa-clock"></i><%= format_time(entry['timestamp']) %></span>
+              </div>
+            </div>
+          </div>
+          <p class="log-message"><%= entry['message'] %></p>
+        </article>
+      <% end %>
+    </div>
+  </section>
+<% when 'sentry' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-bug"></i> Sentry</span>
+      <h1 class="hero-title">מסכי Sentry</h1>
+      <p class="hero-subtitle">הקוד כולל interface ל-Sentry, טעינה אוטומטית בהפעלה, ותצוגת issues/releases בעברית וב-RTL.</p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">Issues</span><strong><%= @sentry_stats[:issues] %></strong></div>
+        <div class="meta-row"><span class="meta-label">Critical</span><strong><%= @sentry_stats[:critical] %></strong></div>
+        <div class="meta-row"><span class="meta-label">Releases</span><strong><%= @sentry_stats[:releases] %></strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel summary-card">
+    <div class="tab-row">
+      <a class="tab-chip <%= @tab == 'overview' ? 'active' : '' %>" href="/sentry/overview">סקירה</a>
+      <a class="tab-chip <%= @tab == 'issues' ? 'active' : '' %>" href="/sentry/issues">Issues</a>
+      <a class="tab-chip <%= @tab == 'releases' ? 'active' : '' %>" href="/sentry/releases">Releases</a>
+      <form action="/sentry/refresh" method="post" style="margin-right:auto;">
+        <button class="button button--accent" type="submit">רענון Sentry</button>
+      </form>
+    </div>
+  </section>
+
+  <% if @tab == 'overview' %>
+    <section class="panel sentry-card">
+      <h2 style="margin-top:0;">סקירה כללית</h2>
+      <div class="summary-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+        <div class="stat"><div class="stat-label">Status</div><div class="stat-value">Healthy</div></div>
+        <div class="stat"><div class="stat-label">Latest issue</div><div class="stat-value"><%= @sentry_issues.first && @sentry_issues.first['title'] ? @sentry_issues.first['title'] : 'n/a' %></div></div>
+        <div class="stat"><div class="stat-label">Latest release</div><div class="stat-value"><%= @sentry_releases.first && @sentry_releases.first['version'] ? @sentry_releases.first['version'] : 'n/a' %></div></div>
+      </div>
+    </section>
+  <% elsif @tab == 'issues' %>
+    <section class="issue-list">
+      <% @sentry_issues.each do |issue| %>
+        <article class="panel issue-item">
+          <div class="issue-top">
+            <div class="issue-main">
+              <div class="issue-title-row">
+                <span><%= issue['sentry_key'] %></span>
+                <span class="badge <%= sentry_level_class(issue['level']) %>"><%= issue['level'] %></span>
+              </div>
+              <h2 class="story-title"><%= issue['title'] %></h2>
+              <p class="issue-message"><%= issue['message'] %></p>
+            </div>
+            <a class="ghost-link" href="<%= issue['url'] %>" target="_blank" rel="noreferrer noopener">פתח ב-Sentry</a>
+          </div>
+          <div class="meta-inline">
+            <span class="meta-chip"><i class="fa-solid fa-user"></i><%= issue['user'] %></span>
+            <span class="meta-chip"><i class="fa-solid fa-server"></i><%= issue['environment'] %></span>
+            <span class="meta-chip"><i class="fa-solid fa-clock"></i><%= format_time(issue['last_seen_at']) %></span>
+          </div>
+        </article>
+      <% end %>
+    </section>
+  <% else %>
+    <section class="release-list">
+      <% @sentry_releases.each do |release| %>
+        <article class="panel release-item">
+          <div class="release-top">
+            <div class="release-main">
+              <div class="release-title-row">
+                <span><%= release['version'] %></span>
+                <span class="badge badge--ok"><%= release['environment'] %></span>
+              </div>
+              <p class="release-description">Commits: <%= release['commit_count'] %> | Users: <%= release['user_count'] %></p>
+            </div>
+            <a class="ghost-link" href="<%= release['url'] %>" target="_blank" rel="noreferrer noopener">Open release</a>
+          </div>
+          <div class="meta-inline">
+            <span class="meta-chip"><i class="fa-solid fa-clock"></i><%= format_time(release['released_at']) %></span>
+            <span class="meta-chip"><i class="fa-solid fa-tag"></i><%= release['release_key'] %></span>
+          </div>
+        </article>
+      <% end %>
+    </section>
+  <% end %>
+<% when 'tests' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-vial"></i> בדיקות</span>
+      <h1 class="hero-title">מסך בדיקות</h1>
+      <p class="hero-subtitle">אותו רעיון של mockup IDE, אבל כעת זה חלק מאפליקציית Sinatra שמוכנה לשילוב בדיקות אמיתיות.</p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">פרויקטים</span><strong><%= @project_stats[:total] %></strong></div>
+        <div class="meta-row"><span class="meta-label">סיפורים</span><strong><%= @story_stats[:total] %></strong></div>
+        <div class="meta-row"><span class="meta-label">Sentry issues</span><strong><%= @sentry_stats[:issues] %></strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel summary-card">
+    <div class="panel-heading">
+      <div>
+        <h2>תבניות Cucumber</h2>
+        <div class="help-text">אפשר להחליף כאן בעתיד לשורות אמיתיות שנקראות מהקבצים.</div>
+      </div>
+    </div>
+    <div class="code-editor"># language: he
+תכונה: התחברות משתמש
+
+  תרחיש: התחברות עם פרטים תקינים
+    בהינתן שהמשתמש נמצא בעמוד ההתחברות
+    וכאשר הוא מזין "user@test.com" ו-"123456"
+    אז המערכת צריכה להעביר אותו לעמוד הבית
+
+  תרחיש: התחברות עם סיסמה שגויה
+    בהינתן שהמשתמש נמצא בעמוד ההתחברות
+    וכאשר הוא מזין "user@test.com" ו-"wrong"
+    אז תוצג הודעת שגיאה ברורה</div>
+  </section>
+<% end %>

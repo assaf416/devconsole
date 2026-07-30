@@ -1,0 +1,144 @@
+{
+  "repository": "owner/my-project",
+  "exported_at": "2026-07-30T15:45:00.000Z",
+  "user": {
+    "login": "github_username",
+    "name": "Your Full Name"
+  },
+  "authenticated": true,
+  "issues": [
+    {
+      "id": 1234567890,
+      "number": 42,
+      "title": "Bug: Login page breaks on mobile",
+      "state": "open",
+      "created_at": "2026-07-15T10:00:00Z",
+      "updated_at": "2026-07-30T10:00:00Z",
+      "labels": [
+        "bug",
+        "critical",
+        "frontend"
+      ],
+      "milestone": "v2.0.0",
+      "assignee": "alice",
+      "url": "https://github.com/owner/my-project/issues/42",
+      "body": "The login form is not responsive on mobile devices..."
+    },
+    {
+      "id": 1234567891,
+      "number": 43,
+      "title": "Feature: Add dark mode",
+      "state": "open",
+      "created_at": "2026-07-20T14:30:00Z",
+      "updated_at": "2026-07-28T16:45:00Z",
+      "labels": [
+        "enhancement",
+        "ui"
+      ],
+      "milestone": "v2.1.0",
+      "assignee": "bob",
+      "url": "https://github.com/owner/my-project/issues/43",
+      "body": "Users have requested a dark theme option for accessibility..."
+    }
+  ],
+  "pull_requests": [
+    {
+      "id": 9876543210,
+      "number": 99,
+      "title": "Fix: Responsive login form",
+      "state": "open",
+      "created_at": "2026-07-25T09:15:00Z",
+      "updated_at": "2026-07-30T14:00:00Z",
+      "author": "alice",
+      "labels": [
+        "bug-fix"
+      ],
+      "assignee": "charlie",
+      "url": "https://github.com/owner/my-project/pull/99",
+      "review_count": 2,
+      "reviews": [
+        {
+          "author": "charlie",
+          "state": "APPROVED",
+          "submitted_at": "2026-07-29T15:00:00Z"
+        },
+        {
+          "author": "diana",
+          "state": "APPROVED",
+          "submitted_at": "2026-07-30T10:30:00Z"
+        }
+      ],
+      "mergeable": true,
+      "merged": false,
+      "merged_at": null,
+      "merged_by": null
+    },
+    {
+      "id": 9876543211,
+      "number": 100,
+      "title": "Feature: Dark mode theme",
+      "state": "open",
+      "created_at": "2026-07-28T11:00:00Z",
+      "updated_at": "2026-07-30T13:45:00Z",
+      "author": "bob",
+      "labels": [
+        "enhancement"
+      ],
+      "assignee": "eve",
+      "url": "https://github.com/owner/my-project/pull/100",
+      "review_count": 1,
+      "reviews": [
+        {
+          "author": "eve",
+          "state": "CHANGES_REQUESTED",
+          "submitted_at": "2026-07-29T16:20:00Z"
+        }
+      ],
+      "mergeable": true,
+      "merged": false,
+      "merged_at": null,
+      "merged_by": null
+    }
+  ],
+  "workflows": [
+    {
+      "id": 1111111,
+      "workflow": "Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "branch": "main",
+      "commit_sha": "abc123def456",
+      "created_at": "2026-07-30T12:00:00Z",
+      "updated_at": "2026-07-30T12:15:00Z",
+      "url": "https://github.com/owner/my-project/actions/runs/1111111",
+      "run_number": 547
+    },
+    {
+      "id": 1111112,
+      "workflow": "Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "branch": "feature/dark-mode",
+      "commit_sha": "xyz789abc123",
+      "created_at": "2026-07-30T10:30:00Z",
+      "updated_at": "2026-07-30T10:45:00Z",
+      "url": "https://github.com/owner/my-project/actions/runs/1111112",
+      "run_number": 546
+    },
+    {
+      "id": 1111113,
+      "workflow": "Lint",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "pull_request",
+      "branch": "feature/responsive-login",
+      "commit_sha": "def456ghi789",
+      "created_at": "2026-07-29T15:00:00Z",
+      "updated_at": "2026-07-29T15:10:00Z",
+      "url": "https://github.com/owner/my-project/actions/runs/1111113",
+      "run_number": 545
+    }
+  ]
+}

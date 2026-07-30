@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DevConsole | <%= page_title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Cascadia+Code:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/app.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body x-data="devConsoleShell()" x-init="initTheme()" :data-theme="theme">
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <span>מרכז הבקרה למפתחים</span>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <form action="/sync" method="post">
+            <button class="button button--soft" type="submit">
+              <i class="fa-solid fa-rotate"></i>
+              סנכרון נתונים
+            </button>
+          </form>
+          <form action="/theme" method="post">
+            <input type="hidden" name="theme" value="<%= @theme == 'dark' ? 'light' : 'dark' %>">
+            <button class="button" type="submit">
+              <i class="fa-solid <%= @theme == 'dark' ? 'fa-sun' : 'fa-moon' %>"></i>
+              <%= theme_toggle_label %>
+            </button>
+          </form>
+        </div>
+        <span class="source-pill">
+          <i class="fa-solid fa-database"></i>
+          SQLite3
+        </span>
+      </div>
+    </header>
+
+    <section class="workbench">
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <strong>סייר מערכת</strong>
+          <span class="muted"><%= project_count_label %></span>
+        </div>
+
+        <nav class="tree">
+          <a class="tree-folder <%= nav_class('projects') %>" href="/projects">
+            <span>▾</span>
+            <span>פרויקטים</span>
+          </a>
+          <div class="tree-group">
+            <a class="tree-item <%= nav_class('projects') %>" href="/projects">
+              <span>🟦</span>
+              <span>ניהול פרויקטים</span>
+            </a>
+            <a class="tree-item <%= nav_class('stories') %>" href="/stories">
+              <span>🟩</span>
+              <span>סיפורים</span>
+            </a>
+            <a class="tree-item <%= nav_class('logs') %>" href="/logs">
+              <span>🟨</span>
+              <span>לוגים</span>
+            </a>
+          </div>
+
+          <a class="tree-folder <%= nav_class('sentry') %>" href="/sentry/overview" style="margin-top:0.35rem;">
+            <span>▾</span>
+            <span>Sentry</span>
+          </a>
+          <div class="tree-group">
+            <a class="tree-item <%= @page == 'sentry' && @tab == 'overview' ? 'active' : '' %>" href="/sentry/overview">
+              <span>⚙</span>
+              <span>סקירה</span>
+            </a>
+            <a class="tree-item <%= @page == 'sentry' && @tab == 'issues' ? 'active' : '' %>" href="/sentry/issues">
+              <span>🔴</span>
+              <span>Issues</span>
+            </a>
+            <a class="tree-item <%= @page == 'sentry' && @tab == 'releases' ? 'active' : '' %>" href="/sentry/releases">
+              <span>🟣</span>
+              <span>Releases</span>
+            </a>
+          </div>
+
+          <a class="tree-folder <%= nav_class('tests') %>" href="/tests" style="margin-top:0.35rem;">
+            <span>▾</span>
+            <span>בדיקות</span>
+          </a>
+          <div class="tree-group">
+            <a class="tree-item <%= nav_class('tests') %>" href="/tests">
+              <span>📄</span>
+              <span>login.feature</span>
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <section class="editor">
+          <div class="action-strip">
+            <div class="context-path"><%= page_title %> / <%= @page == 'sentry' ? @tab : 'overview' %></div>
+            <div class="run-actions">
+              <form action="/sync" method="post">
+                <button class="run-btn start" type="submit">סנכרון</button>
+              </form>
+              <a class="run-btn stop" href="/projects?edit_id=<%= @editing_project ? @editing_project['id'] : '' %>">עריכת פרויקט</a>
+              <a class="run-btn report" href="/sentry/overview">Sentry</a>
+            </div>
+          </div>
+
+          <div class="view">
+            <%= yield %>
+          </div>
+        </section>
+
+        <aside class="chat <%= @page == 'logs' ? 'open' : '' %>">
+          <section class="chat-shell">
+            <header class="chat-head">
+              <strong>צ׳אט צוות / AI</strong>
+              <div class="muted" style="font-size:0.9rem; margin-top:0.2rem;">פאנל דמו קבוע</div>
+            </header>
+            <div class="chat-body">
+              <div class="bubble">האפליקציה הזו נבנית כעת ב-Ruby, Sinatra ו-SQLite3 עם ממשק RTL זהה למוקאפ.</div>
+              <div class="bubble user">צריך גם מסכי Sentry ויכולת לנהל פרויקטים עם github_url ו-staging_url.</div>
+              <div class="bubble">זה כבר מתועד במודל הנתונים ובמסכי Sentry / Projects.</div>
+            </div>
+            <footer class="chat-foot">
+              <input class="chat-input" type="text" placeholder="כתוב הודעה..." disabled>
+            </footer>
+          </section>
+        </aside>
+      </main>
+    </section>
+
+    <footer class="statusbar">
+      <span>ענף: main</span>
+      <span>UTF-8 | RTL | Ruby + Sinatra + SQLite3</span>
+      <span>UI inspired by the mockup HTML</span>
+    </footer>
+  </div>
+
+  <script>
+    function devConsoleShell() {
+      return {
+        theme: document.body?.dataset?.theme || 'dark',
+        initTheme() {
+          const saved = localStorage.getItem('devconsole-theme');
+          if (saved) {
+            this.theme = saved;
+            document.body.dataset.theme = saved;
+          }
+        }
+      };
+    }
+  </script>
+</body>
+</html>
