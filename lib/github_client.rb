@@ -3,6 +3,8 @@ require 'octokit'
 require 'json'
 
 class GitHubClient
+  attr_reader :octokit
+
   def initialize(token = nil, repo = nil)
     @token = token || ENV['GITHUB_TOKEN']
     @repo = repo || ENV['GITHUB_REPO']
@@ -10,8 +12,10 @@ class GitHubClient
     if @token
       @client = Octokit::Client.new(access_token: @token)
       @client.auto_paginate = true
+      @octokit = @client
     else
       @client = Octokit::Client.new
+      @octokit = @client
     end
   end
 

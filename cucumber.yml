@@ -1,0 +1,2 @@
+default: --publish-quiet --format progress
+cli: --publish-quiet --format progress --no-color features/cli.feature --require features/step_definitions/cli_steps.rb --no-source
