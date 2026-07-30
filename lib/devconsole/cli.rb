@@ -114,7 +114,7 @@ module DevConsole
     # ─────────────────────────────────────────────────
     desc 'ticket COMMAND', 'GitHub ticket/PR operations: open | close | merge-pr'
     option :repo,    aliases: '-r', type: :string, desc: 'GitHub repo (owner/repo). Defaults to GITHUB_REPO env var.'
-    option :title,   aliases: '-T', type: :string, desc: 'Issue title (for open)'
+    option :title,   aliases: '-T', type: :string, desc: 'Issue title in Hebrew (for open)'
     option :body,    aliases: '-B', type: :string, desc: 'Issue / PR body'
     option :number,  aliases: '-n', type: :numeric, desc: 'Issue or PR number (for close / merge-pr)'
     option :method,  aliases: '-m', type: :string,  default: 'squash', desc: 'Merge method: squash | merge | rebase'
@@ -133,7 +133,12 @@ module DevConsole
 
       case command
       when 'open'
-        title = options[:title] || ask("Issue title: ")
+        title = options[:title] || ask("כותרת issue בעברית: ")
+        title = title.to_s.strip
+        unless title.match?(/[\p{Hebrew}]/)
+          say "✗  כותרת ה-Issue חייבת לכלול טקסט בעברית", :red
+          exit 1
+        end
         body  = options[:body]  || ''
         unless repo
           say "✗  --repo or GITHUB_REPO is required", :red; exit 1
@@ -162,7 +167,7 @@ module DevConsole
         say "Usage: devconsole ticket <open|close|merge-pr> [options]", :yellow
         say ""
         say "  open      — create a new GitHub issue"
-        say "              --repo, --title, --body"
+        say "              --repo, --title (עברית), --body"
         say "  close     — close an issue or PR"
         say "              --repo, --number"
         say "  merge-pr  — merge a pull request"
