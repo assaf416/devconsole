@@ -1,4 +1,5 @@
 # encoding: utf-8
+require_relative 'simplecov'
 require 'rack/test'
 require 'rspec/matchers'
 require_relative '../../app'
