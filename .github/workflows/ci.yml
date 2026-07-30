@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  cucumber:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Install dependencies
+        run: bundle install --jobs 4 --retry 3
+
+      - name: Run Cucumber with coverage
+        run: |
+          CUCUMBER_PUBLISH_QUIET=true bundle exec cucumber
+
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: warn
+
+      - name: Build coverage summary
+        if: always()
+        id: coverage
+        shell: bash
+        run: |
+          if [[ -f coverage/coverage.json ]]; then
+            covered_percent=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "covered_percent") || 0')
+            covered_strength=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "covered_strength") || 0')
+            covered_lines=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "covered_lines") || 0')
+            total_lines=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "total_lines") || 0')
+            {
+              echo "summary<<EOF"
+              echo "## CI Test Results"
+              echo "- Cucumber: passed"
+              echo ""
+              echo "## Coverage"
+              echo "- Line coverage: ${covered_percent}%"
+              echo "- Covered lines: ${covered_lines}/${total_lines}"
+              echo "- Coverage strength: ${covered_strength}"
+              echo ""
+              echo "Coverage artifacts are attached to this workflow run."
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "summary<<EOF"
+              echo "## CI Test Results"
+              echo "- Cucumber: finished"
+              echo ""
+              echo "## Coverage"
+              echo "Coverage file not generated."
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `${{ toJSON(steps.coverage.outputs.summary) }}`;
+            const marker = '<!-- devconsole-ci-coverage -->';
+            const newBody = `${marker}\n${JSON.parse(body)}`;
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const comments = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+              per_page: 100
+            });
+
+            const existing = comments.data.find(c => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body: newBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body: newBody
+              });
+            }
