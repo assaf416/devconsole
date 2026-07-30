@@ -14,4 +14,6 @@ group :test do
   gem 'rack-test', '~> 2.1'
   gem 'rspec-expectations', '~> 3.13'
   gem 'cucumber-core', '~> 13.0'
+  gem 'simplecov', '~> 0.22'
+  gem 'simplecov-json', '~> 0.2'
 end
