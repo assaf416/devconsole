@@ -8,6 +8,7 @@ gem 'rack', '~> 3.0'
 gem 'rackup', '~> 2.0'
 gem 'sinatra-contrib', '~> 4.1'
 gem 'octokit', '~> 7.1'
+gem 'thor', '~> 1.3'
 
 group :test do
   gem 'cucumber', '~> 9.2'
