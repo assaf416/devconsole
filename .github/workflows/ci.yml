@@ -28,8 +28,7 @@ jobs:
         run: bundle install --jobs 4 --retry 3
 
       - name: Run Cucumber with coverage
-        run: |
-          CUCUMBER_PUBLISH_QUIET=true bundle exec cucumber
+        run: CUCUMBER_PUBLISH_QUIET=true bundle exec cucumber
 
       - name: Upload coverage artifacts
         if: always()
@@ -45,10 +44,23 @@ jobs:
         shell: bash
         run: |
           if [[ -f coverage/coverage.json ]]; then
-            covered_percent=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "covered_percent") || 0')
-            covered_strength=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "covered_strength") || 0')
-            covered_lines=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "covered_lines") || 0')
-            total_lines=$(ruby -rjson -e 'j=JSON.parse(File.read("coverage/coverage.json")); puts j.dig("metrics", "total_lines") || 0')
+            metrics=$(ruby -rjson -e '
+              j = JSON.parse(File.read("coverage/coverage.json"))
+              total = 0
+              covered = 0
+              j.fetch("coverage", {}).each_value do |file_data|
+                Array(file_data["lines"]).each do |v|
+                  next if v.nil?
+                  total += 1
+                  covered += 1 if v.to_i > 0
+                end
+              end
+              percent = total.zero? ? 0.0 : ((covered.to_f / total) * 100).round(2)
+              puts [percent, covered, total].join(" ")
+            ')
+            covered_percent=$(echo "$metrics" | awk '{print $1}')
+            covered_lines=$(echo "$metrics" | awk '{print $2}')
+            total_lines=$(echo "$metrics" | awk '{print $3}')
             {
               echo "summary<<EOF"
               echo "## CI Test Results"
@@ -57,7 +69,6 @@ jobs:
               echo "## Coverage"
               echo "- Line coverage: ${covered_percent}%"
               echo "- Covered lines: ${covered_lines}/${total_lines}"
-              echo "- Coverage strength: ${covered_strength}"
               echo ""
               echo "Coverage artifacts are attached to this workflow run."
               echo "EOF"
@@ -79,9 +90,9 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const body = `${{ toJSON(steps.coverage.outputs.summary) }}`;
             const marker = '<!-- devconsole-ci-coverage -->';
-            const newBody = `${marker}\n${JSON.parse(body)}`;
+            const summary = `${{ steps.coverage.outputs.summary }}`;
+            const body = `${marker}\n${summary}`;
 
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
@@ -100,13 +111,13 @@ jobs:
                 owner,
                 repo,
                 comment_id: existing.id,
-                body: newBody
+                body
               });
             } else {
               await github.rest.issues.createComment({
                 owner,
                 repo,
                 issue_number,
-                body: newBody
+                body
               });
             }
