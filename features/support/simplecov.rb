@@ -16,5 +16,8 @@ SimpleCov.start do
   add_filter '/documentation/'
 
   add_group 'App', 'app.rb'
+  add_group 'Views', 'views'
+  add_group 'Public', 'public'
+
   minimum_coverage 50
 end
