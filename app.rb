@@ -11,8 +11,10 @@ require 'uri'
 class DevConsoleApp < Sinatra::Base
   helpers Sinatra::Cookies
 
-  PROJECT_PAGES = %w[projects stories logs sentry tests].freeze
+  PROJECT_PAGES = %w[projects stories logs sentry tests whiteboard designer video-1to1 video-group kanban pdf-tools].freeze
   SENTRY_TABS = %w[overview issues releases].freeze
+  TESTS_VIEWS = %w[project issues issue-detail prs ci tests test-detail].freeze
+  PDF_VIEWS = %w[merge convert].freeze
   DEFAULT_PROJECT_NAME = 'מרכז ניהול בדיקות ותיעוד'
   DATABASE_PATH = File.expand_path('db/devconsole.sqlite3', __dir__)
   STORIES_PATH = File.expand_path('documentation/stories.json', __dir__)
@@ -87,14 +89,53 @@ class DevConsoleApp < Sinatra::Base
       'overview'
     end
 
+    def active_tests_view
+      view = params[:view].to_s
+      return 'project' if view.empty?
+      return view if TESTS_VIEWS.include?(view)
+      'project'
+    end
+
+    def active_pdf_view
+      view = params[:view].to_s
+      return 'merge' if view.empty?
+      return view if PDF_VIEWS.include?(view)
+      'merge'
+    end
+
     def page_title
       {
         'projects' => 'פרויקטים',
         'stories' => 'סיפורים',
         'logs' => 'לוגים',
         'sentry' => 'Sentry',
-        'tests' => 'בדיקות'
+        'tests' => 'בדיקות',
+        'whiteboard' => 'לוח רעיונות',
+        'designer' => 'עיצוב ממשק',
+        'video-1to1' => 'שיחה ישירה',
+        'video-group' => 'שיחת קבוצה',
+        'kanban' => 'לוח קנבן',
+        'pdf-tools' => 'כלי PDF'
       }[active_page] || 'פרויקטים'
+    end
+
+    def tests_context_path
+      {
+        'project' => 'פרויקט/סקירה.md',
+        'issues' => 'פרויקט/תקלות.json',
+        'issue-detail' => 'פרויקט/תקלות/214.md',
+        'prs' => 'פרויקט/בקשות-משיכה.json',
+        'ci' => 'פרויקט/ci/אחרון.json',
+        'tests' => 'בדיקות/index.view',
+        'test-detail' => 'בדיקות/login.feature'
+      }[active_tests_view] || 'workspace'
+    end
+
+    def pdf_context_path
+      {
+        'merge' => 'pdf/merge-split.view',
+        'convert' => 'pdf/convert-extract.view'
+      }[active_pdf_view] || 'pdf/workspace'
     end
 
     def format_time(value)
@@ -175,6 +216,8 @@ class DevConsoleApp < Sinatra::Base
 
     @page = active_page
     @tab = active_sentry_tab
+    @tests_view = active_tests_view
+    @pdf_view = active_pdf_view
     @projects = projects
     @editing_project = project_by_id(params[:edit_id])
     @stories = stories

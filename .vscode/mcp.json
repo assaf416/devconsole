@@ -1,0 +1,36 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "do_token",
+      "description": "DigitalOcean API Token",
+      "password": true
+    },
+    {
+      "type": "promptString",
+      "id": "hetzner_token",
+      "description": "Hetzner Cloud API Token",
+      "password": true
+    }
+  ],
+  "servers": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "digitalocean": {
+      "type": "http",
+      "url": "https://api.digitalocean.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${input:do_token}"
+      }
+    },
+    "hetzner": {
+      "command": "uvx",
+      "args": ["mcp-hetzner"],
+      "env": {
+        "HCLOUD_TOKEN": "${input:hetzner_token}"
+      }
+    }
+  }
+}

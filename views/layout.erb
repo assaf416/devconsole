@@ -92,18 +92,80 @@
             <span>בדיקות</span>
           </a>
           <div class="tree-group">
-            <a class="tree-item <%= nav_class('tests') %>" href="/tests">
+            <a class="tree-item <%= @page == 'tests' && @tests_view == 'project' ? 'active' : '' %>" href="/tests?view=project">
+              <span>🟦</span>
+              <span>סקירת פרויקט</span>
+            </a>
+            <a class="tree-item <%= @page == 'tests' && (@tests_view == 'issues' || @tests_view == 'issue-detail') ? 'active' : '' %>" href="/tests?view=issues">
+              <span>🟥</span>
+              <span>תקלות</span>
+            </a>
+            <a class="tree-item <%= @page == 'tests' && @tests_view == 'prs' ? 'active' : '' %>" href="/tests?view=prs">
+              <span>🟪</span>
+              <span>PRs</span>
+            </a>
+            <a class="tree-item <%= @page == 'tests' && @tests_view == 'ci' ? 'active' : '' %>" href="/tests?view=ci">
+              <span>🟨</span>
+              <span>CI</span>
+            </a>
+            <a class="tree-item <%= @page == 'tests' && (@tests_view == 'tests' || @tests_view == 'test-detail') ? 'active' : '' %>" href="/tests?view=tests">
               <span>📄</span>
               <span>login.feature</span>
             </a>
           </div>
+
+          <a class="tree-item <%= nav_class('whiteboard') %>" href="/whiteboard" style="margin-top:0.35rem;">
+            <span>🎨</span>
+            <span>לוח רעיונות</span>
+          </a>
+
+          <a class="tree-item <%= nav_class('designer') %>" href="/designer" style="margin-top:0.35rem;">
+            <span>🖌️</span>
+            <span>עיצוב ממשק</span>
+          </a>
+
+          <a class="tree-folder <%= nav_class('video-1to1') %>" href="/video-1to1" style="margin-top:0.35rem;">
+            <span>▾</span>
+            <span>וידאו</span>
+          </a>
+          <div class="tree-group">
+            <a class="tree-item <%= nav_class('video-1to1') %>" href="/video-1to1">
+              <span>👤</span>
+              <span>שיחה ישירה</span>
+            </a>
+            <a class="tree-item <%= nav_class('video-group') %>" href="/video-group">
+              <span>👥</span>
+              <span>שיחת קבוצה</span>
+            </a>
+          </div>
+
+          <a class="tree-item <%= nav_class('kanban') %>" href="/kanban" style="margin-top:0.35rem;">
+            <span>📋</span>
+            <span>לוח קנבן</span>
+          </a>
+
+          <a class="tree-folder <%= nav_class('pdf-tools') %>" href="/pdf-tools" style="margin-top:0.35rem;">
+            <span>▾</span>
+            <span>כלי PDF</span>
+          </a>
+          <div class="tree-group">
+            <a class="tree-item <%= @page == 'pdf-tools' && @pdf_view == 'merge' ? 'active' : '' %>" href="/pdf-tools?view=merge">
+              <span>🧩</span>
+              <span>מיזוג ופיצול</span>
+            </a>
+            <a class="tree-item <%= @page == 'pdf-tools' && @pdf_view == 'convert' ? 'active' : '' %>" href="/pdf-tools?view=convert">
+              <span>🪄</span>
+              <span>המרה וחילוץ</span>
+            </a>
+          </div>
+
         </nav>
       </aside>
 
       <main class="main">
         <section class="editor">
           <div class="action-strip">
-            <div class="context-path"><%= page_title %> / <%= @page == 'sentry' ? @tab : 'overview' %></div>
+            <div class="context-path"><%= page_title %> / <%= @page == 'sentry' ? @tab : (@page == 'tests' ? tests_context_path : (@page == 'pdf-tools' ? pdf_context_path : 'overview')) %></div>
             <div class="run-actions">
               <form action="/sync" method="post">
                 <button class="run-btn start" type="submit">סנכרון</button>
