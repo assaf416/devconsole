@@ -1,0 +1,12 @@
+.git
+.gitignore
+.vscode
+coverage
+node_modules
+.bundle
+vendor/bundle
+public/office-ribbon
+tmp
+log
+*.sqlite3
+.kamal/secrets

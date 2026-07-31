@@ -3,3 +3,6 @@ db/devconsole.sqlite3
 *.gem
 .bundle/
 vendor/bundle/
+.kamal/secrets
+.kamal/secrets.*
+!.kamal/secrets.example

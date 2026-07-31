@@ -10,6 +10,10 @@ gem 'sinatra-contrib', '~> 4.1'
 gem 'octokit', '~> 7.1'
 gem 'thor', '~> 1.3'
 
+group :development do
+  gem 'kamal', '~> 2.7'
+end
+
 group :test do
   gem 'cucumber', '~> 9.2'
   gem 'rack-test', '~> 2.1'

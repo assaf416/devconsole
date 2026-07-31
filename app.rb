@@ -211,6 +211,12 @@ class DevConsoleApp < Sinatra::Base
     redirect '/projects'
   end
 
+  get '/up' do
+    content_type 'text/plain'
+    status 200
+    'ok'
+  end
+
   get '/:page' do
     pass unless PROJECT_PAGES.include?(params[:page])
 

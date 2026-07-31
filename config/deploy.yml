@@ -1,0 +1,41 @@
+# Kamal deploy configuration for Hetzner
+service: devconsole
+
+image: assaf416/devconsole
+
+servers:
+  web:
+    - 46.62.141.240
+
+proxy:
+  ssl: false
+  host: 46.62.141.240
+  app_port: 4567
+  healthcheck:
+    path: /up
+    interval: 2
+    timeout: 2
+
+registry:
+  server: ghcr.io
+  username:
+    - KAMAL_REGISTRY_USERNAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    APP_ENV: production
+    RACK_ENV: production
+  secret:
+    - SENTRY_API_URL
+    - SENTRY_AUTH_TOKEN
+
+ssh:
+  user: root
+
+builder:
+  arch: amd64
+
+volumes:
+  - "devconsole-data:/app/db"

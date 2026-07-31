@@ -121,3 +121,54 @@ jobs:
                 body
               });
             }
+
+  deploy:
+    needs: cucumber
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Prepare Kamal secrets
+        shell: bash
+        run: |
+          mkdir -p .kamal
+          cat > .kamal/secrets <<'EOF'
+          KAMAL_REGISTRY_USERNAME=${{ secrets.KAMAL_REGISTRY_USERNAME }}
+          KAMAL_REGISTRY_PASSWORD=${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+          SENTRY_API_URL=${{ secrets.SENTRY_API_URL }}
+          SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+          EOF
+
+      - name: Setup SSH key for Hetzner
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.HETZNER_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 46.62.141.240 >> ~/.ssh/known_hosts
+
+      - name: Ensure GHCR image name is lowercase
+        shell: bash
+        run: |
+          owner_lc=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          sed -i "s|^image: .*|image: ${owner_lc}/devconsole|" config/deploy.yml
+
+      - name: Deploy with Kamal
+        env:
+          KAMAL_REGISTRY_USERNAME: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+          SENTRY_API_URL: ${{ secrets.SENTRY_API_URL }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: bundle exec kamal deploy
