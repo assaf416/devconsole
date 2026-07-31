@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>מדריך יכולות ה-AI — Dev Environment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Cascadia+Code:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --card: #1f2233;
+      --border: #2e3250;
+      --text: #e2e6f0;
+      --muted: #8b92b0;
+      --accent: #5b7cf6;
+      --accent-2: #7c9dff;
+      --green: #4ec9a0;
+      --orange: #f0a050;
+      --red: #f07070;
+      --purple: #b47cf6;
+      --yellow: #e8c060;
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); color: var(--text); font-family: "Assistant", sans-serif; line-height: 1.7; }
+
+    header {
+      background: linear-gradient(135deg, #1a1d27 0%, #0f1117 60%, #1a1f35 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 3rem 2rem 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(91,124,246,0.15), transparent);
+      pointer-events: none;
+    }
+    header h1 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; letter-spacing: -0.5px; }
+    header h1 span { color: var(--accent-2); }
+    header p { color: var(--muted); margin-top: 0.6rem; font-size: 1.1rem; }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1.2rem; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 0.3rem 0.8rem; font-size: 0.85rem; background: rgba(255,255,255,0.04);
+    }
+    .badge.blue  { border-color: rgba(91,124,246,0.5); color: var(--accent-2); }
+    .badge.green { border-color: rgba(78,201,160,0.5); color: var(--green); }
+    .badge.orange{ border-color: rgba(240,160,80,0.5); color: var(--orange); }
+    .badge.purple{ border-color: rgba(180,124,246,0.5); color: var(--purple); }
+    .badge.yellow{ border-color: rgba(232,192,96,0.5);  color: var(--yellow); }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+    h2.section-title {
+      font-size: 1.5rem; font-weight: 800; margin: 3rem 0 1.2rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    h2.section-title::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .grid { display: grid; gap: 1.2rem; }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.4rem 1.6rem;
+      box-shadow: var(--shadow); transition: border-color 200ms;
+      display: grid; gap: 0.7rem;
+    }
+    .card:hover { border-color: var(--accent); }
+
+    .card-header { display: flex; align-items: flex-start; gap: 0.85rem; }
+    .icon {
+      width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+    }
+    .icon.blue   { background: rgba(91,124,246,0.15); }
+    .icon.green  { background: rgba(78,201,160,0.15); }
+    .icon.orange { background: rgba(240,160,80,0.15); }
+    .icon.purple { background: rgba(180,124,246,0.15); }
+    .icon.yellow { background: rgba(232,192,96,0.15); }
+    .icon.red    { background: rgba(240,112,112,0.15); }
+
+    .card-title { font-size: 1.05rem; font-weight: 700; }
+    .card-subtitle { font-size: 0.82rem; color: var(--muted); font-family: "Cascadia Code", monospace; margin-top: 0.1rem; }
+    .card-body { color: var(--muted); font-size: 0.95rem; line-height: 1.65; }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.3rem; }
+    .tag {
+      font-size: 0.78rem; padding: 0.18rem 0.55rem;
+      border-radius: 999px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04); color: var(--muted);
+      font-family: "Cascadia Code", monospace;
+    }
+
+    .config-block {
+      background: #0d1020; border: 1px solid var(--border); border-radius: 10px;
+      padding: 0.85rem 1rem; font-family: "Cascadia Code", monospace;
+      font-size: 0.82rem; color: #a8b4d8; white-space: pre; overflow-x: auto;
+      margin-top: 0.4rem;
+    }
+
+    .status-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; }
+    .dot-ok   { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+    .dot-warn { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; }
+
+    .workflow-steps { counter-reset: step; display: grid; gap: 0.5rem; margin-top: 0.3rem; }
+    .step {
+      display: flex; gap: 0.8rem; align-items: flex-start;
+      counter-increment: step;
+    }
+    .step::before {
+      content: counter(step);
+      min-width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(91,124,246,0.2); color: var(--accent-2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.82rem; font-weight: 700; flex-shrink: 0;
+    }
+    .step-text { color: var(--muted); font-size: 0.93rem; line-height: 1.55; padding-top: 0.05rem; }
+    .step-text strong { color: var(--text); }
+
+    footer {
+      border-top: 1px solid var(--border); text-align: center;
+      padding: 2rem; color: var(--muted); font-size: 0.88rem;
+    }
+
+    @media (max-width: 700px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      header { padding: 2rem 1rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🧰 מדריך יכולות <span>AI</span> — סביבת הפיתוח</h1>
+  <p>Skills, הוראות, שרתי MCP — כל מה שמוגדר ולמה</p>
+  <div class="badge-row">
+    <span class="badge blue">Ruby / Sinatra / Go</span>
+    <span class="badge green">Cucumber בעברית</span>
+    <span class="badge orange">GitHub Actions CI</span>
+    <span class="badge purple">DigitalOcean</span>
+    <span class="badge yellow">Hetzner</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ===== MCP SERVERS ===== -->
+  <h2 class="section-title">⚡ שרתי MCP שהותקנו</h2>
+  <p style="color:var(--muted);margin-bottom:1.2rem;font-size:0.95rem;">
+    שרתי MCP מאפשרים ל-Copilot לקרוא ולכתוב ישירות לשירותים חיצוניים בזמן אמת, בלי לצאת מ-VS Code.
+    הקובץ <code style="font-family:'Cascadia Code',monospace;color:var(--accent-2)">.vscode/mcp.json</code> מגדיר את כל השרתים.
+  </p>
+
+  <div class="grid grid-3">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon blue">🐙</div>
+        <div>
+          <div class="card-title">GitHub MCP</div>
+          <div class="card-subtitle">github/github-mcp-server</div>
+        </div>
+      </div>
+      <div class="card-body">
+        שרת רשמי של GitHub. מאפשר ניהול Issues, PRs, Actions, Repos וקוד — ישירות מהצ'אט, עם OAuth דרך חשבון Copilot הקיים. <strong>אין צורך בטוקן נפרד.</strong>
+      </div>
+      <div class="tag-row">
+        <span class="tag">issues</span><span class="tag">pull_requests</span>
+        <span class="tag">actions</span><span class="tag">repos</span><span class="tag">users</span>
+      </div>
+      <div class="status-row"><span class="dot-ok"></span>Remote HTTP — OAuth דרך Copilot</div>
+      <div class="config-block">{
+  "github": {
+    "type": "http",
+    "url": "https://api.githubcopilot.com/mcp/"
+  }
+}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon purple">🌊</div>
+        <div>
+          <div class="card-title">DigitalOcean MCP</div>
+          <div class="card-subtitle">api.digitalocean.com/mcp</div>
+        </div>
+      </div>
+      <div class="card-body">
+        שרת רשמי של DigitalOcean. מנהל Droplets, App Platform, Kubernetes ו-Databases. מחייב DO API Token שנשמר בצורה מאובטחת ומוזן לפי דרישה.
+      </div>
+      <div class="tag-row">
+        <span class="tag">droplets</span><span class="tag">apps</span>
+        <span class="tag">kubernetes</span><span class="tag">databases</span>
+      </div>
+      <div class="status-row"><span class="dot-warn"></span>דרוש DO API Token</div>
+      <div class="config-block">{
+  "digitalocean": {
+    "type": "http",
+    "url": "https://api.digitalocean.com/mcp",
+    "headers": {
+      "Authorization": "Bearer ${input:do_token}"
+    }
+  }
+}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon orange">🔴</div>
+        <div>
+          <div class="card-title">Hetzner MCP</div>
+          <div class="card-subtitle">dkruyt/mcp-hetzner (uvx)</div>
+        </div>
+      </div>
+      <div class="card-body">
+        שרת קהילתי (129 ⭐) לניהול Hetzner Cloud: שרתים, רשתות, volumes ו-firewalls. רץ לוקאלית דרך <code style="font-family:'Cascadia Code',monospace">uvx</code>. מחייב Hetzner API Token.
+      </div>
+      <div class="tag-row">
+        <span class="tag">servers</span><span class="tag">networks</span>
+        <span class="tag">volumes</span><span class="tag">firewalls</span>
+      </div>
+      <div class="status-row"><span class="dot-warn"></span>דרוש HCLOUD_TOKEN + uv</div>
+      <div class="config-block">{
+  "hetzner": {
+    "command": "uvx",
+    "args": ["mcp-hetzner"],
+    "env": { "HCLOUD_TOKEN": "${input:hetzner_token}" }
+  }
+}</div>
+    </div>
+
+  </div>
+
+  <!-- ===== SKILLS ===== -->
+  <h2 class="section-title">🧠 Skills פעילים</h2>
+  <p style="color:var(--muted);margin-bottom:1.2rem;font-size:0.95rem;">
+    Skills הם workflows מוכנים שמופעלים אוטומטית כשהם רלוונטיים. הם נמצאים בתוך ה-extension של Copilot ואין צורך להתקינם בנפרד.
+  </p>
+
+  <div class="grid grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon blue">⚙️</div>
+        <div>
+          <div class="card-title">agent-customization</div>
+          <div class="card-subtitle">workflow skill — תמיד פעיל</div>
+        </div>
+      </div>
+      <div class="card-body">
+        יוצר, מעדכן ומאבחן קבצי התאמה אישית של Copilot: <code style="font-family:'Cascadia Code',monospace">.instructions.md</code>, <code style="font-family:'Cascadia Code',monospace">copilot-instructions.md</code>, <code style="font-family:'Cascadia Code',monospace">SKILL.md</code>. מאפשר לשמור העדפות קוד כהוראות קבועות שמשפיעות על כל session.
+      </div>
+      <div class="tag-row">
+        <span class="tag">instructions</span><span class="tag">agents</span>
+        <span class="tag">hooks</span><span class="tag">prompts</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon green">📋</div>
+        <div>
+          <div class="card-title">create-instructions</div>
+          <div class="card-subtitle">יצירת קבצי הוראות לפי pattern</div>
+        </div>
+      </div>
+      <div class="card-body">
+        יוצר קובץ <code style="font-family:'Cascadia Code',monospace">*.instructions.md</code> עם כלל מסוים — לדוגמה "תמיד כתוב issues בעברית" או "השתמש ב-frozen_string_literal". ניתן לאבחן מהשיחה מה המשתמש ביקש וליצור הוראה מתאימה.
+      </div>
+      <div class="tag-row">
+        <span class="tag">applyTo</span><span class="tag">conventions</span><span class="tag">patterns</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon purple">🔁</div>
+        <div>
+          <div class="card-title">create-skill</div>
+          <div class="card-subtitle">אריזת workflow כ-SKILL.md</div>
+        </div>
+      </div>
+      <div class="card-body">
+        הופך workflow חוזר — כמו "צור issue בעברית ← branch ← Cucumber ← PR ← merge ← סגור issue" — ל-Skill לשימוש חוזר. הסקיל ניתן לשיתוף בין פרויקטים.
+      </div>
+      <div class="tag-row">
+        <span class="tag">workflow</span><span class="tag">reusable</span><span class="tag">BDD</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon orange">🔍</div>
+        <div>
+          <div class="card-title">troubleshoot</div>
+          <div class="card-subtitle">אבחון שגיאות ו-CI failures</div>
+        </div>
+      </div>
+      <div class="card-body">
+        עוזר לאבחן שגיאות בדיקות Cucumber, כשלי CI ב-GitHub Actions, שגיאות Ruby/Sinatra ובעיות runtime. משלים את ה-GitHub MCP שמביא לוגי ריצה.
+      </div>
+      <div class="tag-row">
+        <span class="tag">debug</span><span class="tag">CI</span><span class="tag">cucumber</span><span class="tag">errors</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon yellow">🏗️</div>
+        <div>
+          <div class="card-title">project-setup-info-local</div>
+          <div class="card-subtitle">scaffolding פרויקטים חדשים</div>
+        </div>
+      </div>
+      <div class="card-body">
+        יוצר מבנה פרויקט שלם: Rails, Sinatra, Go, MCP Server. כולל Gemfile, config, תיקיות features, ועוד. שימושי לפתיחת פרויקט חדש מאפס עם כל הכלים.
+      </div>
+      <div class="tag-row">
+        <span class="tag">rails</span><span class="tag">sinatra</span><span class="tag">go</span><span class="tag">scaffold</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon red">🔎</div>
+        <div>
+          <div class="card-title">get-search-view-results</div>
+          <div class="card-subtitle">קריאת תוצאות Search ב-VS Code</div>
+        </div>
+      </div>
+      <div class="card-body">
+        מקבל את תוצאות לשונית ה-Search הפתוחה ב-VS Code ומאפשר לנתח, לסנן ולפעול לפיהן — כמו חיפוש ב-codebase וניתוח pattern מסוים בכל הקבצים.
+      </div>
+      <div class="tag-row">
+        <span class="tag">search</span><span class="tag">codebase</span><span class="tag">analysis</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== INSTRUCTIONS FILES ===== -->
+  <h2 class="section-title">📄 קבצי הוראות שנוצרו</h2>
+  <p style="color:var(--muted);margin-bottom:1.2rem;font-size:0.95rem;">
+    קבצים אלה נקראים אוטומטית בכל session ומכתיבים את התנהגות ה-AI — לא צריך לבקש שוב.
+  </p>
+
+  <div class="grid grid-3">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon blue">🌐</div>
+        <div>
+          <div class="card-title">copilot-instructions.md</div>
+          <div class="card-subtitle">.github/copilot-instructions.md</div>
+        </div>
+      </div>
+      <div class="card-body">
+        הוראות בסיס לכל הפרויקט: Stack, שפה (עברית ל-issues), workflow פיתוח מלא, כללי Cucumber ו-Code Review, ושרתי MCP זמינים.
+      </div>
+      <div class="tag-row"><span class="tag">global</span><span class="tag">always-on</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon green">🥒</div>
+        <div>
+          <div class="card-title">cucumber-hebrew</div>
+          <div class="card-subtitle">.github/instructions/cucumber-hebrew.instructions.md</div>
+        </div>
+      </div>
+      <div class="card-body">
+        מיושם אוטומטית על כל קובץ <code style="font-family:'Cascadia Code',monospace">features/**/*.feature</code>. מכתיב שימוש בעברית, מילות מפתח נכונות, ומבנה תרחיש תקין.
+      </div>
+      <div class="tag-row"><span class="tag">applyTo: features/**</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon orange">📝</div>
+        <div>
+          <div class="card-title">github-issues</div>
+          <div class="card-subtitle">.github/instructions/github-issues.instructions.md</div>
+        </div>
+      </div>
+      <div class="card-body">
+        מגדיר פורמט חובה ל-Issues: כותרת בעברית, תיאור, שעות, בדיקת Cucumber מוצעת, branch naming ועדכון issue לאחר merge.
+      </div>
+      <div class="tag-row"><span class="tag">applyTo: **</span><span class="tag">issues</span><span class="tag">PRs</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon purple">💎</div>
+        <div>
+          <div class="card-title">ruby-sinatra</div>
+          <div class="card-subtitle">.github/instructions/ruby-sinatra.instructions.md</div>
+        </div>
+      </div>
+      <div class="card-body">
+        מיושם על כל קבצי <code style="font-family:'Cascadia Code',monospace">*.rb</code>. אוכף <code style="font-family:'Cascadia Code',monospace">frozen_string_literal</code>, Sinatra modular style, validation בגבולות ה-route ובדיקות Cucumber.
+      </div>
+      <div class="tag-row"><span class="tag">applyTo: **/*.rb</span></div>
+    </div>
+
+  </div>
+
+  <!-- ===== WORKFLOW ===== -->
+  <h2 class="section-title">🔄 workflow פיתוח מלא</h2>
+
+  <div class="card" style="max-width:700px;">
+    <div class="workflow-steps">
+      <div class="step"><div class="step-text"><strong>פתיחת Issue בעברית</strong> — כותרת, תיאור שינוי, שעות משוערות, בדיקת Cucumber מוצעת, פתרון מוצע.</div></div>
+      <div class="step"><div class="step-text"><strong>יצירת branch</strong> — שם לפי <code style="font-family:'Cascadia Code',monospace">ST-XXX-תיאור-באנגלית</code>.</div></div>
+      <div class="step"><div class="step-text"><strong>כתיבת Cucumber בעברית</strong> — feature file עם <code style="font-family:'Cascadia Code',monospace"># language: he</code>, step definitions.</div></div>
+      <div class="step"><div class="step-text"><strong>מימוש</strong> — הוספת קוד/תיקון. Ruby, Sinatra, Go לפי הצורך.</div></div>
+      <div class="step"><div class="step-text"><strong>ריצת בדיקות</strong> — <code style="font-family:'Cascadia Code',monospace">bundle exec cucumber</code>. ירוק לפני commit.</div></div>
+      <div class="step"><div class="step-text"><strong>Commit + Push + PR</strong> — PR לתוך main, ממתין ל-CI.</div></div>
+      <div class="step"><div class="step-text"><strong>Merge + סגירת Issue</strong> — עדכון body ב-Issue עם שעות בפועל.</div></div>
+    </div>
+  </div>
+
+  <!-- ===== WHERE TO PUT ===== -->
+  <h2 class="section-title">📁 היכן לשמור את ה-Skillset</h2>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><div class="icon green">🏠</div><div><div class="card-title">User Memory (כלל ה-workspaces)</div></div></div>
+      <div class="card-body">
+        קובץ <code style="font-family:'Cascadia Code',monospace">/memories/development-process.md</code> — נשמר בכל session, בכל workspace. מכיל את ה-Stack, workflow ורשימת MCP. זה <strong>כבר עודכן</strong>.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="icon blue">📁</div><div><div class="card-title">Repo Memory (פרויקט זה)</div></div></div>
+      <div class="card-body">
+        קובץ <code style="font-family:'Cascadia Code',monospace">/memories/repo/devconsole.md</code> — עובדות ספציפיות לפרויקט זה. נשמר גם הוא.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="icon purple">⚙️</div><div><div class="card-title">Copilot Instructions (פרויקט)</div></div></div>
+      <div class="card-body">
+        <code style="font-family:'Cascadia Code',monospace">.github/copilot-instructions.md</code> — הוראות שנקראות בכל session ב-repo זה. ניתן לשכפל ל-repo חדש.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="icon orange">📤</div><div><div class="card-title">שיתוף ב-repos אחרים</div></div></div>
+      <div class="card-body">
+        העתק את תיקיית <code style="font-family:'Cascadia Code',monospace">.github/</code> (instructions + copilot-instructions.md) ואת <code style="font-family:'Cascadia Code',monospace">.vscode/mcp.json</code> לכל repo חדש. זה מה שצריך לשכפל.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  נוצר אוטומטית · July 2026 · Ruby / Sinatra / Go + GitHub MCP + DigitalOcean MCP + Hetzner MCP
+</footer>
+
+</body>
+</html>

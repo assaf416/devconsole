@@ -297,7 +297,7 @@ textarea {
 .view {
   min-height: 0;
   overflow: auto;
-  padding: 1rem;
+  padding: 0.8rem;
 }
 
 .chat {
@@ -419,9 +419,25 @@ textarea {
 }
 
 .hero-title {
-  margin: 1rem 0 0.5rem;
+  margin: 0.55rem 0 0.35rem;
   font-size: clamp(2rem, 4vw, 3.3rem);
   line-height: 1;
+}
+
+.hero-copy h3,
+.summary-card h3,
+.panel h3,
+.panel h4 {
+  margin: 0 0 0.4rem;
+  line-height: 1.25;
+}
+
+.panel-title {
+  margin: 0 0 0.42rem;
+}
+
+.tight-text {
+  margin: 0;
 }
 
 .hero-subtitle,
@@ -450,7 +466,7 @@ log-row {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  padding: 0.8rem 0;
+  padding: 0.58rem 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -491,6 +507,13 @@ log-row {
 .stat-value {
   font-size: 1.8rem;
   font-weight: 800;
+}
+
+.kpi {
+  margin: 0;
+  font-family: "Cascadia Code", monospace;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .progress-bar {
@@ -678,6 +701,30 @@ log-row {
   background: rgba(244, 135, 113, 0.12);
 }
 
+.status {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.83rem;
+}
+
+.status--ok {
+  color: var(--ok);
+  border-color: rgba(78, 201, 176, 0.45);
+}
+
+.status--warn {
+  color: var(--warn);
+  border-color: rgba(215, 186, 125, 0.4);
+}
+
+.status--err {
+  color: var(--err);
+  border-color: rgba(244, 135, 113, 0.45);
+}
+
 .level-info { color: var(--info); background: rgba(47, 111, 152, 0.1); }
 .level-debug { color: var(--muted); background: rgba(107, 98, 89, 0.1); }
 .level-warn { color: var(--warn); background: rgba(165, 114, 22, 0.1); }
@@ -692,6 +739,139 @@ log-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
+}
+
+.filter-bar {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr 1fr;
+  gap: 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-input,
+.filter-select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--panel-3);
+  color: var(--text);
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+}
+
+.attach-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--border);
+  background: var(--panel-3);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.16rem 0.5rem;
+  font-size: 0.82rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin: 0.7rem 0;
+}
+
+.compact-actions {
+  gap: 0.45rem;
+}
+
+.thumb-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.thumb-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--panel-3);
+}
+
+.thumb-image {
+  width: 100%;
+  height: 132px;
+  display: block;
+  object-fit: cover;
+  background: linear-gradient(135deg, #2f3540, #20242b);
+}
+
+.thumb-meta {
+  padding: 0.55rem;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.84rem;
+}
+
+.thumb-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.attachments-panel {
+  margin-top: 0.75rem;
+  padding: 0.8rem;
+}
+
+.issue-layout ul {
+  margin: 0.35rem 0 0.55rem;
+  padding-inline-start: 1.2rem;
+}
+
+.issue-layout p {
+  margin: 0.35rem 0;
+}
+
+.test-split-shell {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.test-split {
+  display: grid;
+  min-height: 520px;
+  max-height: calc(100vh - 200px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.test-split.fixed-split {
+  grid-template-rows: 58% 42%;
+}
+
+.split-pane {
+  min-height: 0;
+  overflow: auto;
+  padding: 0.75rem;
+}
+
+.run-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.55rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.grid.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .criteria {
@@ -817,6 +997,12 @@ log-row {
   .log-top {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .grid.cols-2,
+  .thumb-grid,
+  .filter-bar {
+    grid-template-columns: 1fr;
   }
 
   .sidebar {

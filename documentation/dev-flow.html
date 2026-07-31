@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>תהליך פיתוח Feature — Dev Flow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Cascadia+Code:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080b14;
+      --surface: #0f1320;
+      --card: #141828;
+      --border: #1e2440;
+      --text: #dde3f5;
+      --muted: #6b75a0;
+      --accent: #4f7ef7;
+      --green: #3dd68c;
+      --orange: #f59e42;
+      --purple: #a78bfa;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --teal: #34d1bf;
+      --pink: #f472b6;
+      --glow-blue: rgba(79,126,247,0.35);
+      --glow-green: rgba(61,214,140,0.35);
+      --glow-orange: rgba(245,158,66,0.35);
+      --glow-purple: rgba(167,139,250,0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--bg); }
+    body {
+      font-family: "Assistant", sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 10%, rgba(79,126,247,0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 35% at 80% 80%, rgba(167,139,250,0.07) 0%, transparent 70%),
+        var(--bg);
+    }
+
+    /* ── HEADER ── */
+    header {
+      text-align: center;
+      padding: 3.5rem 1rem 2.5rem;
+      position: relative;
+    }
+    .header-glow {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 200px;
+      background: radial-gradient(ellipse, rgba(79,126,247,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    header h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800;
+      letter-spacing: -0.5px; position: relative;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #4f7ef7 0%, #a78bfa 50%, #34d1bf 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p { color: var(--muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+    /* ── FLOW WRAPPER ── */
+    .flow {
+      max-width: 900px; margin: 0 auto;
+      padding: 1rem 1.5rem 5rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+    }
+
+    /* ── NODE ── */
+    .node {
+      width: 100%; max-width: 680px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.3rem 1.6rem;
+      display: flex; align-items: flex-start; gap: 1.1rem;
+      position: relative;
+      animation: fadeUp 0.5s ease both;
+      transition: transform 200ms, box-shadow 200ms, border-color 200ms;
+      cursor: default;
+    }
+    .node:hover {
+      transform: translateY(-3px) scale(1.01);
+    }
+
+    .node.blue   { border-color: rgba(79,126,247,0.4);  box-shadow: 0 0 0 0 var(--glow-blue); }
+    .node.green  { border-color: rgba(61,214,140,0.4);  box-shadow: 0 0 0 0 var(--glow-green); }
+    .node.orange { border-color: rgba(245,158,66,0.4);  box-shadow: 0 0 0 0 var(--glow-orange); }
+    .node.purple { border-color: rgba(167,139,250,0.4); box-shadow: 0 0 0 0 var(--glow-purple); }
+    .node.teal   { border-color: rgba(52,209,191,0.4);  box-shadow: 0 0 0 0 rgba(52,209,191,0.35); }
+    .node.red    { border-color: rgba(248,113,113,0.4); box-shadow: 0 0 0 0 rgba(248,113,113,0.35); }
+    .node.yellow { border-color: rgba(251,191,36,0.4);  box-shadow: 0 0 0 0 rgba(251,191,36,0.35); }
+    .node.pink   { border-color: rgba(244,114,182,0.4); box-shadow: 0 0 0 0 rgba(244,114,182,0.35); }
+
+    .node:hover.blue   { box-shadow: 0 8px 40px var(--glow-blue); }
+    .node:hover.green  { box-shadow: 0 8px 40px var(--glow-green); }
+    .node:hover.orange { box-shadow: 0 8px 40px var(--glow-orange); }
+    .node:hover.purple { box-shadow: 0 8px 40px var(--glow-purple); }
+    .node:hover.teal   { box-shadow: 0 8px 40px rgba(52,209,191,0.35); }
+    .node:hover.red    { box-shadow: 0 8px 40px rgba(248,113,113,0.35); }
+    .node:hover.yellow { box-shadow: 0 8px 40px rgba(251,191,36,0.35); }
+    .node:hover.pink   { box-shadow: 0 8px 40px rgba(244,114,182,0.35); }
+
+    /* step counter */
+    .step-num {
+      position: absolute; top: -14px; right: 24px;
+      font-size: 0.72rem; font-weight: 700; font-family: "Cascadia Code", monospace;
+      padding: 0.18rem 0.6rem; border-radius: 999px;
+      letter-spacing: 0.5px;
+    }
+    .blue .step-num   { background: rgba(79,126,247,0.2);  color: #7ea9ff; border: 1px solid rgba(79,126,247,0.4); }
+    .green .step-num  { background: rgba(61,214,140,0.2);  color: #6eefb4; border: 1px solid rgba(61,214,140,0.4); }
+    .orange .step-num { background: rgba(245,158,66,0.2);  color: #ffc07a; border: 1px solid rgba(245,158,66,0.4); }
+    .purple .step-num { background: rgba(167,139,250,0.2); color: #c4b0ff; border: 1px solid rgba(167,139,250,0.4); }
+    .teal .step-num   { background: rgba(52,209,191,0.2);  color: #7ef5e8; border: 1px solid rgba(52,209,191,0.4); }
+    .red .step-num    { background: rgba(248,113,113,0.2); color: #ffa5a5; border: 1px solid rgba(248,113,113,0.4); }
+    .yellow .step-num { background: rgba(251,191,36,0.2);  color: #ffe080; border: 1px solid rgba(251,191,36,0.4); }
+    .pink .step-num   { background: rgba(244,114,182,0.2); color: #ffadd9; border: 1px solid rgba(244,114,182,0.4); }
+
+    /* icon bubble */
+    .icon-wrap {
+      width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 1.55rem;
+    }
+    .blue .icon-wrap   { background: linear-gradient(135deg, rgba(79,126,247,0.25), rgba(79,126,247,0.08)); }
+    .green .icon-wrap  { background: linear-gradient(135deg, rgba(61,214,140,0.25), rgba(61,214,140,0.08)); }
+    .orange .icon-wrap { background: linear-gradient(135deg, rgba(245,158,66,0.25), rgba(245,158,66,0.08)); }
+    .purple .icon-wrap { background: linear-gradient(135deg, rgba(167,139,250,0.25), rgba(167,139,250,0.08)); }
+    .teal .icon-wrap   { background: linear-gradient(135deg, rgba(52,209,191,0.25), rgba(52,209,191,0.08)); }
+    .red .icon-wrap    { background: linear-gradient(135deg, rgba(248,113,113,0.25), rgba(248,113,113,0.08)); }
+    .yellow .icon-wrap { background: linear-gradient(135deg, rgba(251,191,36,0.25), rgba(251,191,36,0.08)); }
+    .pink .icon-wrap   { background: linear-gradient(135deg, rgba(244,114,182,0.25), rgba(244,114,182,0.08)); }
+
+    .node-body { flex: 1; min-width: 0; }
+    .node-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .node-desc  { color: var(--muted); font-size: 0.92rem; line-height: 1.6; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+    .chip {
+      font-size: 0.76rem; font-family: "Cascadia Code", monospace;
+      padding: 0.18rem 0.55rem; border-radius: 6px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+      color: var(--muted);
+    }
+    .chip.hi { color: var(--text); background: rgba(255,255,255,0.07); }
+
+    /* tool badges */
+    .tools { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.55rem; }
+    .tool {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.75rem; padding: 0.2rem 0.55rem; border-radius: 999px;
+      font-family: "Cascadia Code", monospace; font-weight: 600;
+    }
+    .tool.mcp  { background: rgba(79,126,247,0.15);  color: #7ea9ff; border: 1px solid rgba(79,126,247,0.3); }
+    .tool.skill{ background: rgba(167,139,250,0.15); color: #c4b0ff; border: 1px solid rgba(167,139,250,0.3); }
+    .tool.cmd  { background: rgba(61,214,140,0.12);  color: #6eefb4; border: 1px solid rgba(61,214,140,0.3); }
+    .tool.mem  { background: rgba(251,191,36,0.12);  color: #ffe080; border: 1px solid rgba(251,191,36,0.3); }
+    .tool.file { background: rgba(52,209,191,0.12);  color: #7ef5e8; border: 1px solid rgba(52,209,191,0.3); }
+
+    /* ── ARROW ── */
+    .arrow {
+      display: flex; flex-direction: column; align-items: center;
+      height: 52px; gap: 0; position: relative; z-index: 1;
+    }
+    .arrow-line {
+      width: 2px; flex: 1;
+      background: linear-gradient(180deg, var(--border) 0%, rgba(79,126,247,0.5) 100%);
+    }
+    .arrow-head {
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 10px solid rgba(79,126,247,0.7);
+    }
+    .arrow-label {
+      position: absolute; left: calc(50% + 14px);
+      top: 50%; transform: translateY(-50%);
+      font-size: 0.72rem; color: var(--muted); white-space: nowrap;
+      font-family: "Cascadia Code", monospace;
+    }
+
+    /* ── BRANCH NODE (decision diamond) ── */
+    .branch-wrap {
+      width: 100%; max-width: 680px;
+      display: flex; align-items: center; gap: 0;
+      position: relative; animation: fadeUp 0.5s ease both;
+    }
+    .diamond {
+      width: 110px; height: 60px; flex-shrink: 0;
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+    .diamond svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .diamond-label {
+      position: relative; z-index: 1;
+      font-size: 0.82rem; font-weight: 700; text-align: center; line-height: 1.2;
+    }
+    .branch-yes, .branch-no {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      font-size: 0.75rem; font-family: "Cascadia Code", monospace;
+    }
+    .branch-line-h {
+      height: 2px; width: 100%;
+      background: linear-gradient(90deg, rgba(79,126,247,0.5), var(--border));
+    }
+
+    /* ── PARALLEL GROUP ── */
+    .parallel {
+      width: 100%; max-width: 680px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem;
+      animation: fadeUp 0.5s ease both;
+    }
+    .parallel .node { max-width: 100%; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .node:nth-child(1)  { animation-delay: 0.05s; }
+    .node:nth-child(2)  { animation-delay: 0.10s; }
+    .parallel .node:nth-child(1) { animation-delay: 0.05s; }
+    .parallel .node:nth-child(2) { animation-delay: 0.12s; }
+
+    /* pulse on special nodes */
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(61,214,140,0.4); }
+      50%       { box-shadow: 0 0 0 8px rgba(61,214,140,0); }
+    }
+    .node.pulse { animation: fadeUp 0.5s ease both, pulse-border 2.5s ease 1s infinite; }
+
+    /* ── LEGEND ── */
+    .legend {
+      max-width: 680px; width: 100%;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.2rem 1.5rem;
+      display: flex; flex-wrap: wrap; gap: 1rem 2rem;
+      margin-top: 2rem; animation: fadeUp 0.5s ease 1.2s both;
+    }
+    .legend-title { width: 100%; font-size: 0.82rem; font-weight: 700; color: var(--muted); }
+    .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    @media (max-width: 600px) {
+      .parallel { grid-template-columns: 1fr; }
+      .node { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-glow"></div>
+  <h1><span class="gradient-text">⚡ תהליך פיתוח Feature</span></h1>
+  <p>מה ה-AI עושה מהרגע שמבקשים ממנו לפתח פיצ'ר חדש</p>
+</header>
+
+<div class="flow">
+
+  <!-- 1 -->
+  <div class="node blue" style="animation-delay:0.05s">
+    <div class="step-num">STEP 01</div>
+    <div class="icon-wrap">💬</div>
+    <div class="node-body">
+      <div class="node-title">קבלת הבקשה וניתוחה</div>
+      <div class="node-desc">מנתחים את הבקשה: מה הפיצ'ר, מה הסוג (bug / feature / refactor), ומה ה-scope. בודקים אם יש stories.json, repo memory ו-instructions רלוונטיות.</div>
+      <div class="tools">
+        <span class="tool mem">📂 /memories/repo/</span>
+        <span class="tool mem">📂 /memories/development-process.md</span>
+        <span class="tool skill">copilot-instructions.md</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">הבנת הקשר</div></div>
+
+  <!-- 2 -->
+  <div class="node purple" style="animation-delay:0.1s">
+    <div class="step-num">STEP 02</div>
+    <div class="icon-wrap">🔍</div>
+    <div class="node-body">
+      <div class="node-title">חקירת ה-Codebase</div>
+      <div class="node-desc">קוראים קבצים רלוונטיים, מחפשים patterns קיימים, מבינים את ה-schema ואת מבנה ה-routes. לא מניחים הנחות — קוראים קודם.</div>
+      <div class="tools">
+        <span class="tool file">read_file</span>
+        <span class="tool file">grep_search</span>
+        <span class="tool file">semantic_search</span>
+        <span class="tool file">file_search</span>
+      </div>
+      <div class="chips">
+        <span class="chip hi">app.rb</span>
+        <span class="chip hi">views/</span>
+        <span class="chip hi">features/</span>
+        <span class="chip hi">Gemfile</span>
+        <span class="chip">db schema</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">הקשר מלא</div></div>
+
+  <!-- 3 GitHub issue -->
+  <div class="node orange" style="animation-delay:0.15s">
+    <div class="step-num">STEP 03</div>
+    <div class="icon-wrap">📋</div>
+    <div class="node-body">
+      <div class="node-title">פתיחת GitHub Issue בעברית</div>
+      <div class="node-desc">יוצרים Issue עם: כותרת בעברית, תיאור שינוי, שעות משוערות, בדיקת Cucumber מוצעת ופתרון מוצע — לפי ה-instructions.md.</div>
+      <div class="tools">
+        <span class="tool mcp">🐙 mcp_github_create_issue</span>
+        <span class="tool skill">github-issues.instructions.md</span>
+      </div>
+      <div class="chips">
+        <span class="chip hi">כותרת בעברית ✓</span>
+        <span class="chip hi">שעות משוערות ✓</span>
+        <span class="chip hi">Cucumber מוצע ✓</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">issue #{n} נפתח</div></div>
+
+  <!-- 4 branch -->
+  <div class="node teal" style="animation-delay:0.20s">
+    <div class="step-num">STEP 04</div>
+    <div class="icon-wrap">🌿</div>
+    <div class="node-body">
+      <div class="node-title">יצירת Feature Branch</div>
+      <div class="node-desc">יוצרים branch בשם <code style="font-family:'Cascadia Code',monospace;font-size:0.88rem">ST-XXX-תיאור-באנגלית</code> מ-main. שם ה-branch נגזר מה-story ID והכותרת.</div>
+      <div class="tools">
+        <span class="tool cmd">git checkout -b ST-XXX-...</span>
+        <span class="tool mcp">🐙 mcp_github_create_branch</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">TDD first</div></div>
+
+  <!-- 5 cucumber -->
+  <div class="node green pulse" style="animation-delay:0.25s">
+    <div class="step-num">STEP 05</div>
+    <div class="icon-wrap">🥒</div>
+    <div class="node-body">
+      <div class="node-title">כתיבת Cucumber בעברית — קודם כל</div>
+      <div class="node-desc">כותבים Feature File עם <code style="font-family:'Cascadia Code',monospace"># language: he</code>, תרחישים בעברית, Step Definitions. הבדיקות אמורות להיות אדומות עדיין.</div>
+      <div class="tools">
+        <span class="tool file">create_file / replace_string_in_file</span>
+        <span class="tool skill">cucumber-hebrew.instructions.md</span>
+        <span class="tool cmd">bundle exec cucumber</span>
+      </div>
+      <div class="chips">
+        <span class="chip hi">תכונה: ...</span>
+        <span class="chip hi">תרחיש: ...</span>
+        <span class="chip hi">בהינתן / וכאשר / אז</span>
+        <span class="chip">🔴 RED</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">implement</div></div>
+
+  <!-- 6 implement -->
+  <div class="node blue" style="animation-delay:0.30s">
+    <div class="step-num">STEP 06</div>
+    <div class="icon-wrap">⚙️</div>
+    <div class="node-body">
+      <div class="node-title">מימוש הפיצ'ר</div>
+      <div class="node-desc">כותבים את הקוד עצמו — routes, helpers, views, DB migrations. עורכים קבצים קיימים ויוצרים חדשים לפי הצורך. לא מוסיפים מעבר למה שנדרש.</div>
+      <div class="tools">
+        <span class="tool file">replace_string_in_file</span>
+        <span class="tool file">create_file</span>
+        <span class="tool skill">ruby-sinatra.instructions.md</span>
+      </div>
+      <div class="chips">
+        <span class="chip hi">app.rb</span><span class="chip hi">views/*.erb</span>
+        <span class="chip hi">app.css</span><span class="chip">db migration</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">ריצת בדיקות</div></div>
+
+  <!-- 7 tests -->
+  <div class="node yellow" style="animation-delay:0.35s">
+    <div class="step-num">STEP 07</div>
+    <div class="icon-wrap">🧪</div>
+    <div class="node-body">
+      <div class="node-title">ריצת כל הבדיקות</div>
+      <div class="node-desc">מריצים Cucumber במצב שקט. אם יש כשל — קוראים את הפלט, מתקנים ומריצים שוב. לא מתקדמים עד שהכל ירוק.</div>
+      <div class="tools">
+        <span class="tool cmd">CUCUMBER_PUBLISH_QUIET=true bundle exec cucumber</span>
+      </div>
+      <div class="chips">
+        <span class="chip hi">🟢 X scenarios passed</span>
+        <span class="chip">0 failures</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">ירוק ✓</div></div>
+
+  <!-- 8 commit+push -->
+  <div class="node purple" style="animation-delay:0.40s">
+    <div class="step-num">STEP 08</div>
+    <div class="icon-wrap">📤</div>
+    <div class="node-body">
+      <div class="node-title">Commit + Push</div>
+      <div class="node-desc">מוסיפים את כל השינויים ל-staging, יוצרים commit עם הודעה ברורה ודוחפים ל-origin.</div>
+      <div class="tools">
+        <span class="tool cmd">git add .</span>
+        <span class="tool cmd">git commit -m "ST-XXX: ..."</span>
+        <span class="tool cmd">git push origin ST-XXX-...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">PR נפתח</div></div>
+
+  <!-- 9 PR -->
+  <div class="node teal" style="animation-delay:0.45s">
+    <div class="step-num">STEP 09</div>
+    <div class="icon-wrap">🔀</div>
+    <div class="node-body">
+      <div class="node-title">פתיחת Pull Request + ממתינים ל-CI</div>
+      <div class="node-desc">פותחים PR ל-main דרך GitHub MCP. בודקים שה-CI Actions עוברות. אם CI אדום — מאבחנים ומתקנים.</div>
+      <div class="tools">
+        <span class="tool mcp">🐙 mcp_github_create_pull_request</span>
+        <span class="tool mcp">🐙 mcp_github_list_workflow_runs</span>
+        <span class="tool skill">troubleshoot skill</span>
+      </div>
+      <div class="chips"><span class="chip hi">🟢 CI passed</span></div>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div><div class="arrow-label">merge</div></div>
+
+  <!-- 10 merge + close -->
+  <div class="node green pulse" style="animation-delay:0.50s">
+    <div class="step-num">STEP 10</div>
+    <div class="icon-wrap">🎉</div>
+    <div class="node-body">
+      <div class="node-title">Merge + סגירת Issue + עדכון זמן</div>
+      <div class="node-desc">ממזגים את ה-PR ל-main, סוגרים את ה-Issue ומעדכנים את ה-body עם: שעות בפועל, קישור ל-branch, קישור ל-PR וקישורים לכל קבצי ה-Cucumber שנוצרו.</div>
+      <div class="tools">
+        <span class="tool mcp">🐙 mcp_github_merge_pull_request</span>
+        <span class="tool mcp">🐙 mcp_github_update_issue</span>
+        <span class="tool mcp">🐙 mcp_github_close_issue</span>
+      </div>
+      <div class="chips">
+        <span class="chip hi">✅ Done</span>
+        <span class="chip hi">שעות בפועל ✓</span>
+        <span class="chip hi">🔗 branch link ✓</span>
+        <span class="chip hi">🔗 PR link ✓</span>
+        <span class="chip hi">🥒 feature files ✓</span>
+        <span class="chip">issue סגור</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-title">🗺️ מקרא</div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#4f7ef7"></div>
+      <span style="color:var(--muted)">ניתוח / מימוש</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#3dd68c"></div>
+      <span style="color:var(--muted)">Cucumber / Green</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#f59e42"></div>
+      <span style="color:var(--muted)">GitHub Issues</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#a78bfa"></div>
+      <span style="color:var(--muted)">Codebase / PR</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#34d1bf"></div>
+      <span style="color:var(--muted)">Git / Branch</span>
+    </div>
+    <div class="legend-item">
+      <span class="tool mcp" style="font-size:0.7rem">MCP</span>
+      <span style="color:var(--muted)">GitHub API</span>
+    </div>
+    <div class="legend-item">
+      <span class="tool skill" style="font-size:0.7rem">skill</span>
+      <span style="color:var(--muted)">Copilot Skill</span>
+    </div>
+    <div class="legend-item">
+      <span class="tool cmd" style="font-size:0.7rem">cmd</span>
+      <span style="color:var(--muted)">Terminal Command</span>
+    </div>
+    <div class="legend-item">
+      <span class="tool mem" style="font-size:0.7rem">mem</span>
+      <span style="color:var(--muted)">Memory / Instructions</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

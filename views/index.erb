@@ -318,4 +318,278 @@
     וכאשר הוא מזין "user@test.com" ו-"wrong"
     אז תוצג הודעת שגיאה ברורה</div>
   </section>
+<% when 'whiteboard' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-chalkboard"></i> לוח רעיונות</span>
+      <h1 class="hero-title">Excalidraw - רישום וציור דיאגרמות</h1>
+      <p class="hero-subtitle">לוח ציור אינטראקטיבי לסרטוט דיאגרמות, תרשימים ותוכניות. השרטוטים נשמרים באופן מקומי בדפדפן שלך.</p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">כלי</span><strong>Excalidraw</strong></div>
+        <div class="meta-row"><span class="meta-label">אחסון</span><strong>Local Storage</strong></div>
+        <div class="meta-row"><span class="meta-label">סוג קבצים</span><strong>.excalidraw</strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel" style="height: 700px; border-radius: 8px; overflow: hidden; margin-top: 2rem;">
+    <iframe 
+      id="excalidraw-frame"
+      src="https://excalidraw.com/" 
+      style="width: 100%; height: 100%; border: none; border-radius: 8px;"
+      title="Excalidraw Whiteboard">
+    </iframe>
+  </section>
+<% when 'designer' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> עיצוב ממשק</span>
+      <h1 class="hero-title">Vvveb - בונה ממשקים חזותי</h1>
+      <p class="hero-subtitle">עורך WYSIWYG לעיצוב ופיתוח דפי אינטרנט. צור דפים עם גרירה והפלה, ללא צורך בקוד.</p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">כלי</span><strong>Vvveb</strong></div>
+        <div class="meta-row"><span class="meta-label">סוג</span><strong>WYSIWYG Editor</strong></div>
+        <div class="meta-row"><span class="meta-label">יצוא</span><strong>HTML/CSS</strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel" style="height: 700px; border-radius: 8px; overflow: hidden; margin-top: 2rem; display: flex; flex-direction: column;">
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: var(--panel-3); border-radius: 8px;">
+      <div style="text-align: center; padding: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🎨</div>
+        <h2 style="margin: 0 0 0.5rem; color: var(--text);">Vvveb WYSIWYG Editor</h2>
+        <p style="margin: 0 0 1.5rem; color: var(--muted);">עמוד זה מספק גישה ישירה לעורך Vvveb</p>
+        <a href="https://www.vvveb.com/" target="_blank" rel="noopener noreferrer" class="button button--accent" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+          <i class="fa-solid fa-external-link"></i>
+          פתח את Vvveb בחלון חדש
+        </a>
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border); max-width: 400px; margin-left: auto; margin-right: auto;">
+          <h3 style="margin: 0 0 0.5rem; text-align: right; color: var(--text);">או השתמש בעורך טבוע</h3>
+          <p style="margin: 0; font-size: 0.9rem; color: var(--muted);">אפשר גם לשמור קבצי HTML בתוכנית ולערוך אותם כאן</p>
+        </div>
+      </div>
+    </div>
+  </section>
+<% when 'video-1to1' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-phone"></i> שיחה ישירה</span>
+      <h1 class="hero-title">Jitsi Meet - שיחת וידאו 1-ל-1</h1>
+      <p class="hero-subtitle">שיחה ישירה ומוקדשת בין שני משתתפים. אין צורך בהרשמה, פשוט התחבר וזהו!</p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">סוג</span><strong>1-על-1</strong></div>
+        <div class="meta-row"><span class="meta-label">פלטפורמה</span><strong>Jitsi Meet</strong></div>
+        <div class="meta-row"><span class="meta-label">אבטחה</span><strong>End-to-End</strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel" style="height: 700px; border-radius: 8px; overflow: hidden; margin-top: 2rem;">
+    <iframe 
+      id="jitsi-1to1-frame"
+      src="https://meet.jitsi.org/devcon-1to1" 
+      style="width: 100%; height: 100%; border: none; border-radius: 8px;"
+      allow="camera; microphone; display-capture; clipboard-write"
+      title="Jitsi Meet 1-to-1 Call">
+    </iframe>
+  </section>
+<% when 'video-group' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-users"></i> שיחת קבוצה</span>
+      <h1 class="hero-title">Jitsi Meet - שיחת וידאו קבוצתית</h1>
+      <p class="hero-subtitle">שיחה בקבוצה עם מספר משתתפים. מושלם לפגישות צוותיות, ישיבות, וקשר קבוצתי.</p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">סוג</span><strong>קבוצה</strong></div>
+        <div class="meta-row"><span class="meta-label">פלטפורמה</span><strong>Jitsi Meet</strong></div>
+        <div class="meta-row"><span class="meta-label">משתתפים</span><strong>ללא גבול</strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel" style="height: 700px; border-radius: 8px; overflow: hidden; margin-top: 2rem;">
+    <iframe 
+      id="jitsi-group-frame"
+      src="https://meet.jitsi.org/devcon-group" 
+      style="width: 100%; height: 100%; border: none; border-radius: 8px;"
+      allow="camera; microphone; display-capture; clipboard-write"
+      title="Jitsi Meet Group Call">
+    </iframe>
+  </section>
+<% when 'kanban' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-table-columns"></i> לוח קנבן</span>
+      <h1 class="hero-title">Kanban Board - ניהול משימות חזותי</h1>
+      <p class="hero-subtitle">אינטגרציה מקומית של CodeWithSindhu/kanban-board-js עם גרירה בין עמודות, טיימרים, תגים וייצוא/ייבוא נתונים.</p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">מקור</span><strong>CodeWithSindhu</strong></div>
+        <div class="meta-row"><span class="meta-label">סוג</span><strong>Kanban JS</strong></div>
+        <div class="meta-row"><span class="meta-label">טעינה</span><strong>Local Assets</strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel" style="height: 780px; border-radius: 8px; overflow: hidden; margin-top: 2rem;">
+    <iframe
+      id="kanban-frame"
+      src="/kanban/index.html"
+      style="width: 100%; height: 100%; border: none; border-radius: 8px;"
+      title="Kanban Board">
+    </iframe>
+  </section>
+<% when 'pdf-tools' %>
+  <section class="hero">
+    <article class="panel hero-copy">
+      <span class="eyebrow"><i class="fa-solid fa-file-pdf"></i> כלי PDF</span>
+      <h1 class="hero-title">PDF Workbench</h1>
+      <p class="hero-subtitle">מסכי עבודה לזרימות PDF נפוצות: מיזוג/פיצול והמרה/חילוץ. מבוסס UX בסגנון תהליכי automation.</p>
+    </article>
+
+    <aside class="hero-side">
+      <section class="panel meta-card">
+        <div class="meta-row"><span class="meta-label">Workflow</span><strong>Queue + Batch</strong></div>
+        <div class="meta-row"><span class="meta-label">פורמט</span><strong>PDF/DOCX/PNG/TXT</strong></div>
+        <div class="meta-row"><span class="meta-label">מצב</span><strong>Prototype UI</strong></div>
+      </section>
+    </aside>
+  </section>
+
+  <section class="panel summary-card">
+    <div class="tab-row">
+      <a class="tab-chip <%= @pdf_view == 'merge' ? 'active' : '' %>" href="/pdf-tools?view=merge">מיזוג ופיצול</a>
+      <a class="tab-chip <%= @pdf_view == 'convert' ? 'active' : '' %>" href="/pdf-tools?view=convert">המרה וחילוץ</a>
+    </div>
+  </section>
+
+  <% if @pdf_view == 'merge' %>
+    <section class="grid cols-2">
+      <article class="panel summary-card">
+        <h3 class="panel-title">Merge / Split Queue</h3>
+        <p class="muted tight-text">הוסף קבצים לתור, סדר גרירה, ובחר פעולה לכל קובץ.</p>
+
+        <div class="list-row">
+          <div>
+            <strong>contract-main.pdf</strong>
+            <div class="muted">24 pages | customer: Aster Labs</div>
+          </div>
+          <span class="status status--ok">merge</span>
+        </div>
+        <div class="list-row">
+          <div>
+            <strong>appendix-security.pdf</strong>
+            <div class="muted">8 pages | tagged: legal</div>
+          </div>
+          <span class="status status--warn">merge</span>
+        </div>
+        <div class="list-row">
+          <div>
+            <strong>report-2026.pdf</strong>
+            <div class="muted">56 pages | split: 1-10, 11-56</div>
+          </div>
+          <span class="status status--err">split</span>
+        </div>
+
+        <div class="inline-actions" style="justify-content:flex-start; margin-top:0.75rem;">
+          <button class="tool-btn primary" type="button">הוסף קבצים</button>
+          <button class="tool-btn" type="button">בצע Merge</button>
+          <button class="tool-btn" type="button">Split לפי טווח</button>
+        </div>
+      </article>
+
+      <article class="panel summary-card">
+        <h3 class="panel-title">Output Preview</h3>
+        <p class="muted tight-text">תצוגה מוקדמת ותצורת פלט לפני ריצה.</p>
+
+        <div class="meta-inline" style="margin-bottom:0.5rem;">
+          <span class="attach-chip">target: merged-contract.pdf</span>
+          <span class="attach-chip">compression: medium</span>
+          <span class="attach-chip">bookmarks: keep</span>
+        </div>
+
+        <div class="code-editor">[Plan]\n1. contract-main.pdf\n2. appendix-security.pdf\n\n[Split]\nreport-2026.pdf => part-A.pdf (1-10), part-B.pdf (11-56)\n\n[Validation]\n- check broken links\n- keep metadata\n- enforce A4 canvas</div>
+
+        <div class="inline-actions" style="justify-content:flex-start; margin-top:0.75rem;">
+          <button class="tool-btn primary" type="button">ייצא חבילה</button>
+          <button class="tool-btn" type="button">שמור פריסט</button>
+        </div>
+      </article>
+    </section>
+  <% else %>
+    <section class="grid cols-2">
+      <article class="panel summary-card">
+        <h3 class="panel-title">Convert Studio</h3>
+        <p class="muted tight-text">המרה בין פורמטים וניהול פרופיל לכל אצווה.</p>
+
+        <div class="list-row">
+          <div>
+            <strong>proposal-q3.pdf</strong>
+            <div class="muted">to DOCX | retain headings</div>
+          </div>
+          <span class="status status--ok">queued</span>
+        </div>
+        <div class="list-row">
+          <div>
+            <strong>manual.pdf</strong>
+            <div class="muted">to TXT | OCR: enabled</div>
+          </div>
+          <span class="status status--warn">running</span>
+        </div>
+        <div class="list-row">
+          <div>
+            <strong>invoice-batch.pdf</strong>
+            <div class="muted">to PNG | 300 DPI</div>
+          </div>
+          <span class="status status--ok">ready</span>
+        </div>
+
+        <div class="inline-actions" style="justify-content:flex-start; margin-top:0.75rem;">
+          <button class="tool-btn primary" type="button">בחר פורמט יעד</button>
+          <button class="tool-btn" type="button">הרץ המרה</button>
+        </div>
+      </article>
+
+      <article class="panel summary-card">
+        <h3 class="panel-title">Extract Console</h3>
+        <p class="muted tight-text">חילוץ טקסט, טבלאות ותמונות עם תצוגת תוצאות.</p>
+
+        <div class="meta-inline" style="margin-bottom:0.5rem;">
+          <span class="attach-chip">mode: tables + text</span>
+          <span class="attach-chip">lang: heb+eng</span>
+          <span class="attach-chip">confidence: ≥ 0.86</span>
+        </div>
+
+        <div class="code-editor">{
+  "file": "audit-pack.pdf",
+  "textBlocks": 142,
+  "tables": 9,
+  "images": 17,
+  "entities": ["invoice_id", "date", "total"],
+  "output": "audit-pack.extracted.json"
+}</div>
+
+        <div class="inline-actions" style="justify-content:flex-start; margin-top:0.75rem;">
+          <button class="tool-btn primary" type="button">חלץ נתונים</button>
+          <button class="tool-btn" type="button">פתח JSON</button>
+          <button class="tool-btn" type="button">ייצא CSV</button>
+        </div>
+      </article>
+    </section>
+  <% end %>
 <% end %>
